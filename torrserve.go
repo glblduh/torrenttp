@@ -18,7 +18,7 @@ func main() {
 	initBTClient(newBtCliConfs(*dirFlag, *noupFlag))
 
 	/* Outputs the download directory and upload status */
-	Info.Printf("Download directory is on: %s", btEngine.BTClientConfig.DataDir)
+	Info.Printf("Download directory is on: %s\n", btEngine.BTClientConfig.DataDir)
 	if btEngine.BTClientConfig.NoUpload {
 		Warn.Println("Upload is disabled")
 	}

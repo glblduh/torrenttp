@@ -34,12 +34,12 @@ func newBtCliConfs(dir string, noup bool) *torrent.ClientConfig {
 
 // Add torrent to client
 func addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torrent.Torrent, error) {
-	t, new, err := btEngine.BTClient.AddTorrentSpec(spec)
+	t, _, err := btEngine.BTClient.AddTorrentSpec(spec)
 	if err != nil {
 		Warn.Printf("Cannot add torrent spec: %s\n", err)
 		return nil, err
 	}
-	if new && !noSave {
+	if !noSave {
 		saveSpec(spec)
 	}
 	return t, nil

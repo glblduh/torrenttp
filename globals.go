@@ -1,3 +1,5 @@
+/* Contains global variables and structs of the program */
+
 package main
 
 import (
@@ -24,11 +26,23 @@ var (
 
 /* Structs */
 type (
-	/* BitTorrent client struct */
+	// BitTorrent client struct
 	btEng struct {
 		BTClient       *torrent.Client
 		BTClientConfig *torrent.ClientConfig
 	}
-)
 
-/* Functions */
+	// Struct for persistent spec
+	persistentSpec struct {
+		Trackers                 [][]string
+		InfoHash                 string
+		DisplayName              string
+		Webseeds                 []string
+		DhtNodes                 []string
+		PeerAddrs                []string
+		Sources                  []string
+		DisableInitialPieceCheck bool
+		DisallowDataUpload       bool
+		DisallowDataDownload     bool
+	}
+)

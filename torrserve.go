@@ -21,6 +21,9 @@ func main() {
 		Warn.Println("Upload is disabled")
 	}
 
+	// Parses torrspec files
+	parseSpecFiles()
+
 	/* Initialize HTTP server */
 	http.ListenAndServe(*portFlag, nil)
 }

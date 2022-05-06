@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -24,6 +26,11 @@ func main() {
 	// Parses torrspec files
 	parseSpecFiles()
 
-	/* Initialize HTTP server */
-	http.ListenAndServe(*portFlag, nil)
+	/* Initialize endpoints and HTTP server */
+	r := mux.NewRouter()
+
+	/* Handlers for endpoints */
+	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
+
+	http.ListenAndServe(*portFlag, r)
 }

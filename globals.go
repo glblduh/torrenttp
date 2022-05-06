@@ -45,4 +45,20 @@ type (
 		DisallowDataUpload       bool
 		DisallowDataDownload     bool
 	}
+
+	jsonErrorRes struct {
+		Error string `json:"error"`
+	}
+
+	apiAddMagnetBody struct {
+		Magnet string `json:"magnet"`
+
+		/*
+			These are optional for manual adding of torrent spec
+			The first priority is the magnet link rather than these
+		*/
+		InfoHash    string   `json:"infohash"`
+		DisplayName string   `json:"displayname"`
+		Trackers    []string `json:"trackers"`
+	}
 )

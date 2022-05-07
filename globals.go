@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/anacrolix/torrent"
+	"github.com/anacrolix/torrent/metainfo"
 )
 
 /* Variables */
@@ -24,12 +25,13 @@ var (
 	Error = log.New(os.Stderr, "["+time.Now().Format("2006/01/02 15:04:05")+"] [ERROR] ", log.Lmsgprefix)
 )
 
-/* Structs */
+/* Structs for non-HTTP handlers */
 type (
 	// BitTorrent client struct
 	btEng struct {
 		Client       *torrent.Client
 		ClientConfig *torrent.ClientConfig
+		Torrents     map[string]torrentHandle
 	}
 
 	// Struct for persistent spec
@@ -48,6 +50,31 @@ type (
 		Files                    []string
 	}
 
+	// Holds non-native stats for *torrent.Torrent
+	torrentHandle struct {
+		/* Main handles */
+		Torrent *torrent.Torrent
+		Spec    *torrent.TorrentSpec
+
+		/* Idenfiers */
+		Name           string
+		InfoHash       metainfo.Hash
+		InfoHashString string
+
+		/* Stats */
+		DlSpeedBytes    int64
+		DlSpeedReadable string
+		UlSpeedBytes    int64
+		UlSpeedReadable string
+
+		/* Temporary */
+		DlLastProgress int64
+		UlLastProgress int64
+	}
+)
+
+/* Structs of HTTP handlers */
+type (
 	// Response of JSON error
 	jsonErrorRes struct {
 		Error string `json:"error"`

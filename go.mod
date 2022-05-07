@@ -1,4 +1,4 @@
-module torrserve
+module torrenttp
 
 go 1.18
 

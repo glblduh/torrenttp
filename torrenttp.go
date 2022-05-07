@@ -9,7 +9,7 @@ import (
 
 func main() {
 	/* Argument flags */
-	dirFlag := flag.String("dir", "torrservedl", "Download directory path")
+	dirFlag := flag.String("dir", "torrenttpdl", "Download directory path")
 	portFlag := flag.String("port", ":1010", "HTTP server listening port")
 	noupFlag := flag.Bool("noup", false, "Disables BT client upload")
 	flag.Parse()

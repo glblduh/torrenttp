@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
@@ -65,4 +66,8 @@ func persistSpecToTorrentSpec(spec persistentSpec) *torrent.TorrentSpec {
 		DisallowDataUpload:       spec.DisallowDataUpload,
 		DisallowDataDownload:     spec.DisallowDataDownload,
 	}
+}
+
+func createFileLink(infohash string, filename string) string {
+	return "/api/getfile?infohash=" + infohash + "&file=" + url.QueryEscape(filename)
 }

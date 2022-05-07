@@ -39,6 +39,7 @@ func main() {
 
 	/* Handlers for endpoints */
 	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
+	r.HandleFunc("/api/selectfile", apiTorrentSelectFile).Methods("POST")
 
 	Error.Fatalln(http.ListenAndServe(*portFlag, r))
 }

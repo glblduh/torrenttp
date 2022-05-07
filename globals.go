@@ -48,11 +48,13 @@ type (
 		Files                    []string
 	}
 
+	// Response of JSON error
 	jsonErrorRes struct {
 		Error string `json:"error"`
 	}
 
-	apiAddMagnetBody struct {
+	// Expected request body to addTorrent
+	apiAddTorrentBody struct {
 		Magnet string `json:"magnet"`
 
 		/*
@@ -64,7 +66,8 @@ type (
 		Trackers    []string `json:"trackers"`
 	}
 
-	apiAddMagnetRes struct {
+	// Expected response from addTorrent
+	apiAddTorrentRes struct {
 		Name          string            `json:"name"`
 		InfoHash      string            `json:"infohash"`
 		TotalPeers    int               `json:"totalpeers"`
@@ -74,8 +77,29 @@ type (
 		Files         []apiTorrentFiles `json:"files"`
 	}
 
+	// Struct for files in torrent
 	apiTorrentFiles struct {
 		FileName      string `json:"filename"`
 		FileSizeBytes int    `json:"filesizebytes"`
+	}
+
+	// Expected request body to selectFile
+	apiTorrentSelectFileBody struct {
+		InfoHash string   `json:"infohash"`
+		AllFiles bool     `json:"allfiles"`
+		Files    []string `json:"files"`
+	}
+
+	// Expected response body from selectFile
+	apiTorrentSelectFileRes struct {
+		Name     string                         `json:"name"`
+		InfoHash string                         `json:"infohash"`
+		Files    []apiTorrentSelectFileResFiles `json:"files"`
+	}
+
+	// Struct for selectFile Files
+	apiTorrentSelectFileResFiles struct {
+		FileName string `json:"filename"`
+		Link     string `json:"link"`
 	}
 )

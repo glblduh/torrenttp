@@ -28,8 +28,8 @@ var (
 type (
 	// BitTorrent client struct
 	btEng struct {
-		BTClient       *torrent.Client
-		BTClientConfig *torrent.ClientConfig
+		Client       *torrent.Client
+		ClientConfig *torrent.ClientConfig
 	}
 
 	// Struct for persistent spec
@@ -44,6 +44,8 @@ type (
 		DisableInitialPieceCheck bool
 		DisallowDataUpload       bool
 		DisallowDataDownload     bool
+		AllFiles                 bool
+		Files                    []string
 	}
 
 	jsonErrorRes struct {

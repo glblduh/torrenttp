@@ -18,13 +18,13 @@ func main() {
 	initBTClient(newBtCliConfs(*dirFlag, *noupFlag))
 
 	/* Outputs the download directory and upload status */
-	Info.Printf("Download directory is on: %s\n", btEngine.BTClientConfig.DataDir)
-	if btEngine.BTClientConfig.NoUpload {
+	Info.Printf("Download directory is on: %s\n", btEngine.ClientConfig.DataDir)
+	if btEngine.ClientConfig.NoUpload {
 		Warn.Println("Upload is disabled")
 	}
 
 	// Parses torrspec files
-	parseSpecFiles()
+	loadPersist()
 
 	/* Initialize endpoints and HTTP server */
 	r := mux.NewRouter()

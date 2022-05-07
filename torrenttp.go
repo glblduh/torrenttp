@@ -24,13 +24,12 @@ func main() {
 	}
 
 	/* Initilize DB */
-	dberr := specDB.initDB()
+	dberr := createSpecBucket()
 	if dberr != nil {
 		Error.Fatalf("Cannot initialize DB: %s\n", dberr)
 	}
-	specDB.createSpecBucket()
 	// Parses torrent specs in DB
-	lperr := specDB.loadPersist()
+	lperr := loadPersist()
 	if lperr != nil {
 		Warn.Printf("Cannot load torrent specs: %s\n", lperr)
 	}

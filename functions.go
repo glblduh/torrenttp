@@ -75,9 +75,9 @@ func createFileLink(infohash string, filename string) string {
 }
 
 // Get the file handle inside the torrent
-func getTorrentFile(t *torrent.Torrent, filename string) (*torrent.File, error) {
+func getTorrentFile(t *torrent.Torrent, displaypath string) (*torrent.File, error) {
 	for _, f := range t.Files() {
-		if f.DisplayPath() == filename {
+		if f.DisplayPath() == displaypath {
 			return f, nil
 		}
 	}

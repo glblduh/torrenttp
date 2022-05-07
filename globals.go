@@ -9,16 +9,12 @@ import (
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
-	"github.com/boltdb/bolt"
 )
 
 /* Variables */
 var (
 	/* BitTorrent client */
 	btEngine btEng
-
-	/* Database handle */
-	specDB specDb
 
 	/* Loggers */
 	// For information
@@ -36,11 +32,6 @@ type (
 		Client       *torrent.Client
 		ClientConfig *torrent.ClientConfig
 		Torrents     map[string]torrentHandle
-	}
-
-	// Struct for the DB handle
-	specDb struct {
-		db *bolt.DB
 	}
 
 	// Struct for persistent spec

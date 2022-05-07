@@ -29,7 +29,7 @@ func (Engine *btEng) addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torren
 		return nil, err
 	}
 	if new && !noSave {
-		sserr := specDB.saveSpec(spec)
+		sserr := saveSpec(spec)
 		if sserr != nil {
 			Warn.Printf("Cannot save torrent spec: %s\n", sserr)
 		}
@@ -63,7 +63,7 @@ func (Engine *btEng) dropTorrent(infohash string) error {
 	}
 	t.Drop()
 	Engine.removeTorrentHandle(infohash)
-	rmerr := specDB.removeSpec(t.InfoHash().String())
+	rmerr := removeSpec(t.InfoHash().String())
 	if rmerr != nil {
 		Warn.Printf("Cannot remove spec from DB: %s\n", rmerr)
 	}

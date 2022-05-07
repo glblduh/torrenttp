@@ -12,24 +12,27 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-func (DB *specDb) initDB() error {
-	var err error
-	DB.db, err = bolt.Open(
+func openDB() (*bolt.DB, error) {
+	return bolt.Open(
 		filepath.Join(btEngine.ClientConfig.DataDir, ".torrserve.db"),
 		0600,
 		nil)
-	return err
 }
 
-func (DB *specDb) createSpecBucket() {
-	DB.db.Update(func(tx *bolt.Tx) error {
+func createSpecBucket() error {
+	db, dberr := openDB()
+	if dberr != nil {
+		return dberr
+	}
+	defer db.Close()
+	return db.Update(func(tx *bolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte("TorrSpecs"))
 		return nil
 	})
 }
 
 // Saves torrent spec to database file
-func (DB *specDb) saveSpec(spec *torrent.TorrentSpec) error {
+func saveSpec(spec *torrent.TorrentSpec) error {
 	json, err := json.Marshal(persistentSpec{
 		Trackers:                 spec.Trackers,
 		InfoHash:                 spec.InfoHash.String(),
@@ -45,20 +48,25 @@ func (DB *specDb) saveSpec(spec *torrent.TorrentSpec) error {
 	if err != nil {
 		return err
 	}
-	return DB.specToDB(spec.InfoHash.String(), json)
+	return specToDB(spec.InfoHash.String(), json)
 }
 
 // Commit a persistentSpec to DB
-func (DB *specDb) specToDB(infohash string, json []byte) error {
-	return DB.db.Update(func(tx *bolt.Tx) error {
+func specToDB(infohash string, json []byte) error {
+	db, dberr := openDB()
+	if dberr != nil {
+		return dberr
+	}
+	defer db.Close()
+	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		return b.Put([]byte(strings.ToLower(infohash)), json)
 	})
 }
 
 // Loads all persistentSpec to BitTorrent client
-func (DB *specDb) loadPersist() error {
-	specs, err := DB.getSpecs()
+func loadPersist() error {
+	specs, err := getSpecs()
 	if err != nil {
 		return err
 	}
@@ -66,7 +74,7 @@ func (DB *specDb) loadPersist() error {
 		t, terr := btEngine.addTorrent(persistSpecToTorrentSpec(spec), true)
 		if terr != nil {
 			Warn.Printf("Cannot load spec \"%s\": %s\n", spec.InfoHash, terr)
-			rmerr := DB.removeSpec(spec.InfoHash)
+			rmerr := removeSpec(spec.InfoHash)
 			if rmerr != nil {
 				Warn.Printf("Cannot remove spec \"%s\": %s\n", spec.InfoHash, rmerr)
 			}
@@ -89,9 +97,14 @@ func (DB *specDb) loadPersist() error {
 }
 
 // Returns all persistentSpec in DB
-func (DB *specDb) getSpecs() ([]persistentSpec, error) {
+func getSpecs() ([]persistentSpec, error) {
+	db, dberr := openDB()
+	if dberr != nil {
+		return []persistentSpec{}, dberr
+	}
+	defer db.Close()
 	specs := []persistentSpec{}
-	verr := DB.db.View(func(tx *bolt.Tx) error {
+	verr := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		c := b.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -108,8 +121,8 @@ func (DB *specDb) getSpecs() ([]persistentSpec, error) {
 }
 
 // Get specific persistentSpec from infohash
-func (DB *specDb) getSpec(infohash string) (persistentSpec, error) {
-	specs, err := DB.getSpecs()
+func getSpec(infohash string) (persistentSpec, error) {
+	specs, err := getSpecs()
 	if err != nil {
 		return persistentSpec{}, err
 	}
@@ -121,20 +134,25 @@ func (DB *specDb) getSpec(infohash string) (persistentSpec, error) {
 	return persistentSpec{}, errors.New("Torrent spec not found")
 }
 
-func (DB *specDb) removeSpec(infohash string) error {
-	return DB.db.Update(func(tx *bolt.Tx) error {
+func removeSpec(infohash string) error {
+	db, dberr := openDB()
+	if dberr != nil {
+		return dberr
+	}
+	defer db.Close()
+	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		return b.Delete([]byte(strings.ToLower(infohash)))
 	})
 }
 
 // Adds selected files of torrent to DB for persistence
-func (DB *specDb) saveSpecFiles(infohash string, allfiles bool, files []string) error {
-	spec, err := DB.getSpec(infohash)
+func saveSpecFiles(infohash string, allfiles bool, files []string) error {
+	spec, err := getSpec(infohash)
 	if err != nil {
 		return err
 	}
-	rmerr := DB.removeSpec(infohash)
+	rmerr := removeSpec(infohash)
 	if rmerr != nil {
 		return rmerr
 	}
@@ -144,5 +162,5 @@ func (DB *specDb) saveSpecFiles(infohash string, allfiles bool, files []string) 
 	if jerr != nil {
 		return jerr
 	}
-	return DB.specToDB(infohash, json)
+	return specToDB(infohash, json)
 }

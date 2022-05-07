@@ -32,7 +32,6 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 	// If manual metainfo is present
 	if body.Magnet == "" && body.InfoHash != "" && body.DisplayName != "" {
 		spec = makeTorrentSpec(body.InfoHash, body.DisplayName, body.Trackers)
-		btEngine.addTorrent(spec, false)
 	}
 
 	var terr error

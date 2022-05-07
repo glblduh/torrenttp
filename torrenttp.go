@@ -15,7 +15,7 @@ func main() {
 	flag.Parse()
 
 	// Creates the BitTorrent client with user args
-	initBTClient(newBtCliConfs(*dirFlag, *noupFlag))
+	btEngine.initialize(newBtCliConfs(*dirFlag, *noupFlag))
 
 	/* Outputs the download directory and upload status */
 	Info.Printf("Download directory is on: %s\n", btEngine.ClientConfig.DataDir)
@@ -24,12 +24,13 @@ func main() {
 	}
 
 	/* Initilize DB */
-	csberr := createSpecBucket()
-	if csberr != nil {
-		Error.Fatalf("Cannot initialize DB: %s\n", csberr)
+	dberr := specDB.initDB()
+	if dberr != nil {
+		Error.Fatalf("Cannot initialize DB: %s\n", dberr)
 	}
+	specDB.createSpecBucket()
 	// Parses torrent specs in DB
-	lperr := loadPersist()
+	lperr := specDB.loadPersist()
 	if lperr != nil {
 		Warn.Printf("Cannot load torrent specs: %s\n", lperr)
 	}
@@ -40,6 +41,7 @@ func main() {
 	/* Handlers for endpoints */
 	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
 	r.HandleFunc("/api/selectfile", apiTorrentSelectFile).Methods("POST")
+	r.HandleFunc("/api/stream/{infohash}/{file:.*}", apiStreamTorrentFile).Methods("GET")
 
 	Error.Fatalln(http.ListenAndServe(*portFlag, r))
 }

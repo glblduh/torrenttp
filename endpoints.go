@@ -2,8 +2,10 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/anacrolix/torrent"
+	"github.com/gorilla/mux"
 )
 
 // Endpoint handler for torrent adding to client
@@ -30,11 +32,11 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 	// If manual metainfo is present
 	if body.Magnet == "" && body.InfoHash != "" && body.DisplayName != "" {
 		spec = makeTorrentSpec(body.InfoHash, body.DisplayName, body.Trackers)
-		addTorrent(spec, false)
+		btEngine.addTorrent(spec, false)
 	}
 
 	var terr error
-	t, terr = addTorrent(spec, false)
+	t, terr = btEngine.addTorrent(spec, false)
 	if terr != nil {
 		errorRes(w, terr.Error(), http.StatusInternalServerError)
 		return
@@ -70,7 +72,7 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	/* Gets torrent handler from client */
-	t, err := getTorrHandle(body.InfoHash)
+	t, err := btEngine.getTorrHandle(body.InfoHash)
 	if err != nil {
 		errorRes(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -113,5 +115,23 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encodeRes(w, &res)
+	return
+}
+
+// Endpoint for streaming a file
+func apiStreamTorrentFile(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	t, err := btEngine.getTorrHandle(vars["infohash"])
+	if err != nil {
+		errorRes(w, "Torrent not found: "+err.Error(), http.StatusNotFound)
+	}
+	f, ferr := getTorrentFile(t, vars["file"])
+	if ferr != nil {
+		errorRes(w, "File not found: "+err.Error(), http.StatusNotFound)
+	}
+	reader := f.NewReader()
+	defer reader.Close()
+	reader.SetReadahead(f.Length() / 100)
+	http.ServeContent(w, r, f.DisplayPath(), time.Now(), reader)
 	return
 }

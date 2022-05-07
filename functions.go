@@ -4,13 +4,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
-	"github.com/dustin/go-humanize"
 )
 
 // Function for sending error message as JSON response
@@ -74,32 +74,20 @@ func createFileLink(infohash string, filename string) string {
 	return "/api/getfile?infohash=" + infohash + "&file=" + url.QueryEscape(filename)
 }
 
-/* Functions with receivers */
-
-/* btEng functions */
-
-// Adds torrent handle to custom torrent handler
-func (Engine btEng) addTorrentHandle(t *torrent.Torrent, spec *torrent.TorrentSpec) {
-	Engine.Torrents[t.InfoHash().String()] = torrentHandle{
-		Torrent:        t,
-		Spec:           spec,
-		Name:           t.Name(),
-		InfoHash:       t.InfoHash(),
-		InfoHashString: t.InfoHash().String(),
+// Get the file handle inside the torrent
+func getTorrentFile(t *torrent.Torrent, filename string) (*torrent.File, error) {
+	for _, f := range t.Files() {
+		if f.DisplayPath() == filename {
+			return f, nil
+		}
 	}
+	return nil, errors.New("File not found")
 }
 
-// Remove torrent handle from custom torrent handle
-func (Engine btEng) removeTorrentHandle(infohash string) {
-	delete(Engine.Torrents, infohash)
-}
-
-func (Engine btEng) calculateSpeeds(infohash string) {
-	handle := Engine.Torrents[infohash]
-
-	/* Download speed */
-	curprog := handle.Torrent.BytesCompleted()
-	handle.DlSpeedBytes = curprog - handle.DlLastProgress
-	handle.DlSpeedReadable = humanize.Bytes(uint64(handle.DlSpeedBytes)) + "/s"
-	handle.DlLastProgress = curprog
+// Create config for BitTorrent client with confs from args
+func newBtCliConfs(dir string, noup bool) *torrent.ClientConfig {
+	opts := torrent.NewDefaultClientConfig()
+	opts.DataDir = dir
+	opts.NoUpload = noup
+	return opts
 }

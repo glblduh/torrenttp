@@ -75,7 +75,12 @@ func loadPersist() error {
 	for _, spec := range specs {
 		t, terr := addTorrent(persistSpecToTorrentSpec(spec), true)
 		if terr != nil {
-			return terr
+			Warn.Printf("Cannot load spec \"%s\": %s\n", spec.InfoHash, terr)
+			rmerr := removeSpec(spec.InfoHash)
+			if rmerr != nil {
+				Warn.Printf("Cannot remove spec \"%s\": %s\n", spec.InfoHash, rmerr)
+			}
+			continue
 		}
 		if spec.AllFiles {
 			t.DownloadAll()

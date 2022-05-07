@@ -40,6 +40,7 @@ func addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torrent.Torrent, error
 			Warn.Printf("Cannot save torrent spec: %s\n", sserr)
 		}
 	}
+	<-t.GotInfo()
 	return t, nil
 }
 

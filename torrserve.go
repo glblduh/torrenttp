@@ -31,7 +31,7 @@ func main() {
 	// Parses torrent specs in DB
 	lperr := loadPersist()
 	if lperr != nil {
-		Error.Fatalf("Cannot load torrent specs: %s\n", lperr)
+		Warn.Printf("Cannot load torrent specs: %s\n", lperr)
 	}
 
 	/* Initialize endpoints and HTTP server */

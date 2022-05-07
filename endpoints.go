@@ -40,6 +40,21 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	<-t.GotInfo()
-	Info.Println(t.Name())
+	/* Creates the response body*/
+	res := apiAddMagnetRes{
+		Name:          t.Name(),
+		InfoHash:      t.InfoHash().String(),
+		TotalPeers:    t.Stats().TotalPeers,
+		ActivePeers:   t.Stats().ActivePeers,
+		PendingPeers:  t.Stats().PendingPeers,
+		HalfOpenPeers: t.Stats().HalfOpenPeers,
+	}
+	for _, f := range t.Files() {
+		res.Files = append(res.Files, apiTorrentFiles{
+			FileName:      f.DisplayPath(),
+			FileSizeBytes: int(f.Length()),
+		})
+	}
+	encodeRes(w, &res)
+	return
 }

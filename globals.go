@@ -63,4 +63,19 @@ type (
 		DisplayName string   `json:"displayname"`
 		Trackers    []string `json:"trackers"`
 	}
+
+	apiAddMagnetRes struct {
+		Name          string            `json:"name"`
+		InfoHash      string            `json:"infohash"`
+		TotalPeers    int               `json:"totalpeers"`
+		ActivePeers   int               `json:"activepeers"`
+		PendingPeers  int               `json:"pendingpeers"`
+		HalfOpenPeers int               `json:"halfopenpeers"`
+		Files         []apiTorrentFiles `json:"files"`
+	}
+
+	apiTorrentFiles struct {
+		FileName      string `json:"filename"`
+		FileSizeBytes int    `json:"filesizebytes"`
+	}
 )

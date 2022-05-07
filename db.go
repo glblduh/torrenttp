@@ -21,6 +21,18 @@ func getDB() (*bolt.DB, error) {
 	return db, err
 }
 
+func createSpecBucket() error {
+	db, dberr := getDB()
+	if dberr != nil {
+		return dberr
+	}
+	defer db.Close()
+	return db.Update(func(tx *bolt.Tx) error {
+		_, berr := tx.CreateBucketIfNotExists([]byte("TorrSpecs"))
+		return berr
+	})
+}
+
 // Saves torrent spec to database file
 func saveSpec(spec *torrent.TorrentSpec) error {
 	json, err := json.Marshal(persistentSpec{
@@ -48,18 +60,10 @@ func specToDB(infohash string, json []byte) error {
 		return dberr
 	}
 	defer db.Close()
-	werr := db.Update(func(tx *bolt.Tx) error {
-		b, berr := tx.CreateBucketIfNotExists([]byte("TorrSpecs"))
-		if berr != nil {
-			return berr
-		}
-		perr := b.Put([]byte(strings.ToLower(infohash)), json)
-		if perr != nil {
-			return perr
-		}
-		return nil
+	return db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("TorrSpecs"))
+		return b.Put([]byte(strings.ToLower(infohash)), json)
 	})
-	return werr
 }
 
 // Loads all persistentSpec to BitTorrent client
@@ -113,18 +117,18 @@ func getSpecs() ([]persistentSpec, error) {
 	return specs, verr
 }
 
-// Get specific *torrent.TorrentSpec from infohash
-func getSpec(infohash string) (*torrent.TorrentSpec, error) {
+// Get specific persistentSpec from infohash
+func getSpec(infohash string) (persistentSpec, error) {
 	specs, err := getSpecs()
 	if err != nil {
-		return nil, err
+		return persistentSpec{}, err
 	}
 	for _, spec := range specs {
 		if spec.InfoHash == infohash {
-			return persistSpecToTorrentSpec(spec), nil
+			return spec, nil
 		}
 	}
-	return nil, errors.New("Torrent spec not found")
+	return persistentSpec{}, errors.New("Torrent spec not found")
 }
 
 // Turns persistentSpec to *torrent.TorrentSpec
@@ -153,4 +157,23 @@ func removeSpec(infohash string) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		return b.Delete([]byte(strings.ToLower(infohash)))
 	})
+}
+
+// Adds selected files of torrent to DB for persistence
+func saveSpecFiles(infohash string, allfiles bool, files []string) error {
+	spec, err := getSpec(infohash)
+	if err != nil {
+		return err
+	}
+	rmerr := removeSpec(infohash)
+	if rmerr != nil {
+		return rmerr
+	}
+	spec.AllFiles = allfiles
+	spec.Files = files
+	json, jerr := json.Marshal(&spec)
+	if jerr != nil {
+		return jerr
+	}
+	return specToDB(infohash, json)
 }

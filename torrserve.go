@@ -23,14 +23,22 @@ func main() {
 		Warn.Println("Upload is disabled")
 	}
 
-	// Parses torrspec files
-	loadPersist()
+	/* Initilize DB */
+	csberr := createSpecBucket()
+	if csberr != nil {
+		Error.Fatalf("Cannot initialize DB: %s\n", csberr)
+	}
+	// Parses torrent specs in DB
+	lperr := loadPersist()
+	if lperr != nil {
+		Error.Fatalf("Cannot load torrent specs: %s\n", lperr)
+	}
 
 	/* Initialize endpoints and HTTP server */
-	r := mux.NewRouter()
+	r := mux.NewRouter().StrictSlash(true)
 
 	/* Handlers for endpoints */
 	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
 
-	http.ListenAndServe(*portFlag, r)
+	Error.Fatalln(http.ListenAndServe(*portFlag, r))
 }

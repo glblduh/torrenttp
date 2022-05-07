@@ -45,7 +45,6 @@ type (
 		DisableInitialPieceCheck bool
 		DisallowDataUpload       bool
 		DisallowDataDownload     bool
-		AllFiles                 bool
 		Files                    []string
 	}
 

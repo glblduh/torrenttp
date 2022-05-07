@@ -80,9 +80,7 @@ func loadPersist() error {
 			}
 			continue
 		}
-		if spec.AllFiles {
-			t.DownloadAll()
-		}
+		Info.Printf("Loaded torrent \"%s\"\n", t.Name())
 		for _, f := range spec.Files {
 			tf, tferr := getTorrentFile(t, f)
 			if tferr != nil {
@@ -90,8 +88,8 @@ func loadPersist() error {
 				continue
 			}
 			tf.Download()
+			Info.Printf("Started download of file \"%s\"", tf.DisplayPath())
 		}
-		Info.Printf("Loaded torrent \"%s\"\n", t.Name())
 	}
 	return nil
 }
@@ -146,8 +144,8 @@ func removeSpec(infohash string) error {
 	})
 }
 
-// Adds selected files of torrent to DB for persistence
-func saveSpecFiles(infohash string, allfiles bool, files []string) error {
+// Adds file of torrent to DB for persistence
+func saveSpecFile(infohash string, filename string) error {
 	spec, err := getSpec(infohash)
 	if err != nil {
 		return err
@@ -156,8 +154,7 @@ func saveSpecFiles(infohash string, allfiles bool, files []string) error {
 	if rmerr != nil {
 		return rmerr
 	}
-	spec.AllFiles = allfiles
-	spec.Files = files
+	spec.Files = append(spec.Files, filename)
 	json, jerr := json.Marshal(&spec)
 	if jerr != nil {
 		return jerr

@@ -87,6 +87,7 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 	if body.AllFiles {
 		t.DownloadAll()
 		for _, f := range t.Files() {
+			saveSpecFile(t.InfoHash().String(), f.DisplayPath())
 			res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 				FileName: f.DisplayPath(),
 				Link:     createFileLink(t.InfoHash().String(), f.DisplayPath()),
@@ -96,20 +97,14 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 
 	// If specific files are selected
 	for _, f := range body.Files {
-		fn := "FILENOTFOUND"
-		lnk := "FILENOTFOUND"
-
 		tf, tferr := getTorrentFile(t, f)
 		if tferr != nil {
 			continue
 		}
-
-		fn = tf.DisplayPath()
-		lnk = createFileLink(t.InfoHash().String(), tf.DisplayPath())
-
+		saveSpecFile(t.InfoHash().String(), tf.DisplayPath())
 		res.Files = append(res.Files, apiTorrentSelectFileResFiles{
-			FileName: fn,
-			Link:     lnk,
+			FileName: tf.DisplayPath(),
+			Link:     createFileLink(t.InfoHash().String(), tf.DisplayPath()),
 		})
 	}
 

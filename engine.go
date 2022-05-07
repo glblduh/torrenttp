@@ -73,11 +73,8 @@ func (Engine *btEng) dropTorrent(infohash string) error {
 // Adds torrent handle to custom torrent handler
 func (Engine *btEng) addTorrentHandle(t *torrent.Torrent, spec *torrent.TorrentSpec) {
 	Engine.Torrents[t.InfoHash().String()] = torrentHandle{
-		Torrent:        t,
-		Spec:           spec,
-		Name:           t.Name(),
-		InfoHash:       t.InfoHash(),
-		InfoHashString: t.InfoHash().String(),
+		Torrent: t,
+		Spec:    spec,
 	}
 }
 

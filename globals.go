@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/anacrolix/torrent"
-	"github.com/anacrolix/torrent/metainfo"
 )
 
 /* Variables */
@@ -55,11 +54,6 @@ type (
 		/* Main handles */
 		Torrent *torrent.Torrent
 		Spec    *torrent.TorrentSpec
-
-		/* Idenfiers */
-		Name           string
-		InfoHash       metainfo.Hash
-		InfoHashString string
 
 		/* Stats */
 		DlSpeedBytes    int64

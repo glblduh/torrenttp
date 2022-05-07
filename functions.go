@@ -50,3 +50,19 @@ func encodeRes(w http.ResponseWriter, v any) error {
 	}
 	return err
 }
+
+// Turns persistentSpec to *torrent.TorrentSpec
+func persistSpecToTorrentSpec(spec persistentSpec) *torrent.TorrentSpec {
+	return &torrent.TorrentSpec{
+		Trackers:                 spec.Trackers,
+		InfoHash:                 metainfo.NewHashFromHex(spec.InfoHash),
+		DisplayName:              spec.DisplayName,
+		Webseeds:                 spec.Webseeds,
+		DhtNodes:                 spec.DhtNodes,
+		PeerAddrs:                spec.PeerAddrs,
+		Sources:                  spec.Sources,
+		DisableInitialPieceCheck: spec.DisableInitialPieceCheck,
+		DisallowDataUpload:       spec.DisallowDataUpload,
+		DisallowDataDownload:     spec.DisallowDataDownload,
+	}
+}

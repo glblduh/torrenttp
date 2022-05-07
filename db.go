@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/anacrolix/torrent"
-	"github.com/anacrolix/torrent/metainfo"
 	"github.com/boltdb/bolt"
 )
 
@@ -134,22 +133,6 @@ func getSpec(infohash string) (persistentSpec, error) {
 		}
 	}
 	return persistentSpec{}, errors.New("Torrent spec not found")
-}
-
-// Turns persistentSpec to *torrent.TorrentSpec
-func persistSpecToTorrentSpec(spec persistentSpec) *torrent.TorrentSpec {
-	return &torrent.TorrentSpec{
-		Trackers:                 spec.Trackers,
-		InfoHash:                 metainfo.NewHashFromHex(spec.InfoHash),
-		DisplayName:              spec.DisplayName,
-		Webseeds:                 spec.Webseeds,
-		DhtNodes:                 spec.DhtNodes,
-		PeerAddrs:                spec.PeerAddrs,
-		Sources:                  spec.Sources,
-		DisableInitialPieceCheck: spec.DisableInitialPieceCheck,
-		DisallowDataUpload:       spec.DisallowDataUpload,
-		DisallowDataDownload:     spec.DisallowDataDownload,
-	}
 }
 
 func removeSpec(infohash string) error {

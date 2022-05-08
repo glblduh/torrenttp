@@ -30,7 +30,7 @@ type (
 	btEng struct {
 		Client       *torrent.Client
 		ClientConfig *torrent.ClientConfig
-		Torrents     map[string]torrentHandle
+		Torrents     map[string]*torrentHandle
 	}
 
 	// Struct for persistent spec

@@ -4,6 +4,7 @@ package main
 
 import (
 	"errors"
+	"time"
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
@@ -18,7 +19,8 @@ func (Engine *btEng) initialize(opts *torrent.ClientConfig) {
 	if err != nil {
 		Error.Fatalf("Cannot initialize BitTorrent client: %s", err)
 	}
-	Engine.Torrents = make(map[string]torrentHandle)
+	Engine.Torrents = make(map[string]*torrentHandle)
+	go btEngine.calculateSpeeds()
 }
 
 // Add torrent to client
@@ -66,7 +68,7 @@ func (Engine *btEng) dropTorrent(infohash string) error {
 
 // Adds torrent handle to custom torrent handler
 func (Engine *btEng) addTorrentHandle(t *torrent.Torrent, spec *torrent.TorrentSpec) {
-	Engine.Torrents[t.InfoHash().String()] = torrentHandle{
+	Engine.Torrents[t.InfoHash().String()] = &torrentHandle{
 		Torrent: t,
 		Spec:    spec,
 	}
@@ -77,12 +79,17 @@ func (Engine *btEng) removeTorrentHandle(infohash string) {
 	delete(Engine.Torrents, infohash)
 }
 
-func (Engine *btEng) calculateSpeeds(infohash string) {
-	handle := Engine.Torrents[infohash]
+func (Engine *btEng) calculateSpeeds() {
+	torrents := Engine.Torrents
 
-	/* Download speed */
-	curprog := handle.Torrent.BytesCompleted()
-	handle.DlSpeedBytes = curprog - handle.DlLastProgress
-	handle.DlSpeedReadable = humanize.Bytes(uint64(handle.DlSpeedBytes)) + "/s"
-	handle.DlLastProgress = curprog
+	for {
+		for k := range torrents {
+			/* Download speed */
+			curprog := torrents[k].Torrent.BytesCompleted()
+			torrents[k].DlSpeedBytes = curprog - torrents[k].DlLastProgress
+			torrents[k].DlSpeedReadable = humanize.Bytes(uint64(torrents[k].DlSpeedBytes)) + "/s"
+			torrents[k].DlLastProgress = curprog
+		}
+		time.Sleep(1 * time.Second)
+	}
 }

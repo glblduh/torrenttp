@@ -2,8 +2,6 @@ module torrenttp
 
 go 1.18
 
-require github.com/anacrolix/torrent v1.42.0
-
 require (
 	crawshaw.io/sqlite v0.3.3-0.20210127221821-98b1f83c5508 // indirect
 	github.com/RoaringBitmap/roaring v0.9.4 // indirect
@@ -21,6 +19,7 @@ require (
 	github.com/anacrolix/multiless v0.2.1-0.20211218050420-533661eef5dc // indirect
 	github.com/anacrolix/stm v0.3.0 // indirect
 	github.com/anacrolix/sync v0.4.0 // indirect
+	github.com/anacrolix/torrent v1.42.0 // indirect
 	github.com/anacrolix/upnp v0.1.3-0.20220123035249-922794e51c96 // indirect
 	github.com/anacrolix/utp v0.1.0 // indirect
 	github.com/benbjohnson/immutable v0.3.0 // indirect

@@ -43,6 +43,8 @@ func main() {
 	r.HandleFunc("/api/selectfile", apiTorrentSelectFile).Methods("POST")
 	r.HandleFunc("/api/stream/{infohash}/{file:.*}", apiStreamTorrentFile).Methods("GET")
 	r.HandleFunc("/api/removetorrent", apiRemoveTorrent).Methods("DELETE")
+	r.HandleFunc("/api/torrents", apiTorrentStats).Methods("GET")
+	r.HandleFunc("/api/torrents/{infohash}", apiTorrentStats).Methods("GET")
 
 	/* CORS middleware */
 	c := cors.New(cors.Options{

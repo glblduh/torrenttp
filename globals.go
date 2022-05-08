@@ -133,4 +133,33 @@ type (
 		Name     string `json:"name"`
 		InfoHash string `json:"infohash"`
 	}
+
+	// Expected response body from torrentStats
+	apiTorrentStasRes struct {
+		Torrents []apiTorrentStasResTorrents `json:"torrents"`
+	}
+
+	apiTorrentStasResTorrents struct {
+		Name                  string                         `json:"name"`
+		InfoHash              string                         `json:"infohash"`
+		TotalPeers            int                            `json:"totalpeers"`
+		ActivePeers           int                            `json:"activepeers"`
+		PendingPeers          int                            `json:"pendingpeers"`
+		HalfOpenPeers         int                            `json:"halfopenpeers"`
+		DownloadSpeedBytes    int                            `json:"downloadspeedbytes"`
+		DownloadSpeedReadable string                         `json:"downloadspeedreadable"`
+		Files                 apiTorrentStasResTorrentsFiles `json:"files"`
+	}
+
+	apiTorrentStasResTorrentsFiles struct {
+		OnTorrent []apiTorrentFiles                    `json:"ontorrent"`
+		OnDisk    []apiTorrentStatsTorrentsFilesOnDisk `json:"ondisk"`
+	}
+
+	apiTorrentStatsTorrentsFilesOnDisk struct {
+		FileName        string `json:"filename"`
+		FileSizeBytes   int    `json:"filesizebytes"`
+		BytesDownloaded int    `json:"bytesdownloaded"`
+		Link            string `json:"link"`
+	}
 )

@@ -25,13 +25,12 @@ func (Engine *btEng) initialize(opts *torrent.ClientConfig) {
 func (Engine *btEng) addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torrent.Torrent, error) {
 	t, new, err := Engine.Client.AddTorrentSpec(spec)
 	if err != nil {
-		Warn.Printf("Cannot add torrent spec: %s\n", err)
 		return nil, err
 	}
 	if new && !noSave {
 		sserr := saveSpec(spec)
 		if sserr != nil {
-			Warn.Printf("Cannot save torrent spec: %s\n", sserr)
+			return nil, sserr
 		}
 	}
 
@@ -44,12 +43,10 @@ func (Engine *btEng) addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torren
 // Get *torrent.Torrent from infohash
 func (Engine *btEng) getTorrHandle(infohash string) (*torrent.Torrent, error) {
 	if len(infohash) != 40 {
-		Warn.Println("Invalid infohash")
 		return nil, errors.New("Invalid infohash")
 	}
 	t, ok := Engine.Client.Torrent(metainfo.NewHashFromHex(infohash))
 	if !ok {
-		Warn.Println("Torrent not found")
 		return nil, errors.New("Torrent not found")
 	}
 	return t, nil
@@ -64,9 +61,6 @@ func (Engine *btEng) dropTorrent(infohash string) error {
 	t.Drop()
 	Engine.removeTorrentHandle(infohash)
 	rmerr := removeSpec(t.InfoHash().String())
-	if rmerr != nil {
-		Warn.Printf("Cannot remove spec from DB: %s\n", rmerr)
-	}
 	return rmerr
 }
 

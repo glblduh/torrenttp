@@ -114,18 +114,27 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 
 // Endpoint for streaming a file
 func apiStreamTorrentFile(w http.ResponseWriter, r *http.Request) {
+	// Get infohash and filename variables
 	vars := mux.Vars(r)
+
+	/* Get torrent handle from infohash */
 	t, err := btEngine.getTorrHandle(vars["infohash"])
 	if err != nil {
-		errorRes(w, "Torrent not found", http.StatusNotFound)
+		errorRes(w, err.Error(), http.StatusNotFound)
 	}
+
+	/* Get torrent file handle from filename */
 	f, ferr := getTorrentFile(t, vars["file"])
 	if ferr != nil {
-		errorRes(w, "File not found", http.StatusNotFound)
+		errorRes(w, ferr.Error(), http.StatusNotFound)
 	}
+
+	/* Make torrent file reader for streaming */
 	reader := f.NewReader()
 	defer reader.Close()
+	// Set the buffer to 1% of the file size
 	reader.SetReadahead(f.Length() / 100)
+	// Send the reader as HTTP response
 	http.ServeContent(w, r, f.DisplayPath(), time.Now(), reader)
 	return
 }
@@ -141,7 +150,7 @@ func apiRemoveTorrent(w http.ResponseWriter, r *http.Request) {
 	/* Getting the torrent handle */
 	t, terr := btEngine.getTorrHandle(body.InfoHash)
 	if terr != nil {
-		errorRes(w, "Torrent not found", http.StatusNotFound)
+		errorRes(w, terr.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -162,6 +171,73 @@ func apiRemoveTorrent(w http.ResponseWriter, r *http.Request) {
 		Name:     tname,
 		InfoHash: ih,
 	}
+	encodeRes(w, &res)
+	return
+}
+
+// Torrent stats endpoint
+func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
+	/* Get infohash variable from the request */
+	vars := mux.Vars(r)
+	res := apiTorrentStasRes{}
+
+	/* Variables */
+	tlist := btEngine.Torrents
+	ih := vars["infohash"]
+
+	/* If provided with infohash */
+	if ih != "" {
+		/* Check if infohash is valid */
+		_, terr := btEngine.getTorrHandle(ih)
+		if terr != nil {
+			errorRes(w, terr.Error(), http.StatusNotFound)
+			return
+		}
+
+		Info.Printf("hey")
+		/* Overwrite tlist with only the selected torrent's handle */
+		templist := make(map[string]torrentHandle)
+		templist[ih] = btEngine.Torrents[ih]
+		tlist = templist
+	}
+
+	/* Go through the tlist */
+	for _, v := range tlist {
+		tstats := apiTorrentStasResTorrents{}
+
+		/* Setting main stats */
+		tstats.Name = v.Torrent.Name()
+		tstats.InfoHash = v.Torrent.InfoHash().String()
+		tstats.TotalPeers = v.Torrent.Stats().TotalPeers
+		tstats.ActivePeers = v.Torrent.Stats().ActivePeers
+		tstats.PendingPeers = v.Torrent.Stats().PendingPeers
+		tstats.HalfOpenPeers = v.Torrent.Stats().HalfOpenPeers
+		tstats.DownloadSpeedBytes = int(v.DlSpeedBytes)
+		tstats.DownloadSpeedReadable = v.DlSpeedReadable
+
+		/* Setting the files available in the torrent */
+		for _, tf := range v.Torrent.Files() {
+			tfname := tf.DisplayPath()
+			tfsize := int(tf.Length())
+			tstats.Files.OnTorrent = append(tstats.Files.OnTorrent, apiTorrentFiles{
+				FileName:      tfname,
+				FileSizeBytes: tfsize,
+			})
+			if tf.BytesCompleted() > 0 {
+				tstats.Files.OnDisk = append(tstats.Files.OnDisk, apiTorrentStatsTorrentsFilesOnDisk{
+					FileName:        tfname,
+					FileSizeBytes:   tfsize,
+					BytesDownloaded: int(tf.BytesCompleted()),
+					Link:            createFileLink(tstats.InfoHash, tfname),
+				})
+			}
+		}
+
+		/* Append it response body */
+		res.Torrents = append(res.Torrents, tstats)
+	}
+
+	/* Send response */
 	encodeRes(w, &res)
 	return
 }

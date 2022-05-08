@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -41,6 +42,14 @@ func main() {
 	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
 	r.HandleFunc("/api/selectfile", apiTorrentSelectFile).Methods("POST")
 	r.HandleFunc("/api/stream/{infohash}/{file:.*}", apiStreamTorrentFile).Methods("GET")
+	r.HandleFunc("/api/removetorrent", apiRemoveTorrent).Methods("DELETE")
 
-	Error.Fatalln(http.ListenAndServe(*portFlag, r))
+	/* CORS middleware */
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE"},
+		AllowCredentials: true,
+	}).Handler(r)
+
+	Error.Fatalln(http.ListenAndServe(*portFlag, c))
 }

@@ -71,7 +71,7 @@ func persistSpecToTorrentSpec(spec persistentSpec) *torrent.TorrentSpec {
 
 // Creates a URL for the stream of file
 func createFileLink(infohash string, filename string) string {
-	return "/api/getfile?infohash=" + infohash + "&file=" + url.QueryEscape(filename)
+	return "/api/stream/" + infohash + "/" + url.QueryEscape(filename)
 }
 
 // Get the file handle inside the torrent

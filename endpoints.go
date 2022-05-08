@@ -24,7 +24,7 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 		var err error
 		spec, err = torrent.TorrentSpecFromMagnetUri(body.Magnet)
 		if err != nil {
-			errorRes(w, err.Error(), http.StatusInternalServerError)
+			errorRes(w, "Magnet decoding error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -37,7 +37,7 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 	var terr error
 	t, terr = btEngine.addTorrent(spec, false)
 	if terr != nil {
-		errorRes(w, terr.Error(), http.StatusInternalServerError)
+		errorRes(w, "Torrent add error: "+terr.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -117,15 +117,51 @@ func apiStreamTorrentFile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	t, err := btEngine.getTorrHandle(vars["infohash"])
 	if err != nil {
-		errorRes(w, "Torrent not found: "+err.Error(), http.StatusNotFound)
+		errorRes(w, "Torrent not found", http.StatusNotFound)
 	}
 	f, ferr := getTorrentFile(t, vars["file"])
 	if ferr != nil {
-		errorRes(w, "File not found: "+err.Error(), http.StatusNotFound)
+		errorRes(w, "File not found", http.StatusNotFound)
 	}
 	reader := f.NewReader()
 	defer reader.Close()
 	reader.SetReadahead(f.Length() / 100)
 	http.ServeContent(w, r, f.DisplayPath(), time.Now(), reader)
+	return
+}
+
+// Endpoint for removing a torrent
+func apiRemoveTorrent(w http.ResponseWriter, r *http.Request) {
+	/* Parses the request body to apiRemoveTorrent */
+	body := apiRemoveTorrentBody{}
+	if decodeBody(w, r.Body, &body) != nil {
+		return
+	}
+
+	/* Getting the torrent handle */
+	t, terr := btEngine.getTorrHandle(body.InfoHash)
+	if terr != nil {
+		errorRes(w, "Torrent not found", http.StatusNotFound)
+		return
+	}
+
+	/* Saving of variables for response body */
+	tname := t.Name()
+	ih := t.InfoHash().String()
+
+	/* Remover function */
+	btEngine.removeTorrentHandle(ih)
+	rmerr := removeSpec(ih)
+	if rmerr != nil {
+		errorRes(w, "Torrent removal error: "+rmerr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	/* Creating response body */
+	res := apiRemoveTorrentRes{
+		Name:     tname,
+		InfoHash: ih,
+	}
+	encodeRes(w, &res)
 	return
 }

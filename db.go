@@ -84,7 +84,7 @@ func loadPersist() error {
 		for _, f := range spec.Files {
 			tf, tferr := getTorrentFile(t, f)
 			if tferr != nil {
-				Warn.Printf("Cannot load file %s: %s\n", f, tferr)
+				Warn.Printf("Cannot load file \"%s\": %s\n", f, tferr)
 				continue
 			}
 			tf.Download()

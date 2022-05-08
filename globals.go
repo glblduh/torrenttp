@@ -122,4 +122,15 @@ type (
 		FileName string `json:"filename"`
 		Link     string `json:"link"`
 	}
+
+	// Expected request body to removeTorrent
+	apiRemoveTorrentBody struct {
+		InfoHash string `json:"infohash"`
+	}
+
+	// Expected response body from removeTorrent
+	apiRemoveTorrentRes struct {
+		Name     string `json:"name"`
+		InfoHash string `json:"infohash"`
+	}
 )

@@ -193,7 +193,6 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		Info.Printf("hey")
 		/* Overwrite tlist with only the selected torrent's handle */
 		templist := make(map[string]*torrentHandle)
 		templist[ih] = btEngine.Torrents[ih]

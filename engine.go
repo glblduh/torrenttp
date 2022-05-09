@@ -36,10 +36,13 @@ func (Engine *btEng) initialize(opts *torrent.ClientConfig) {
 
 // Add torrent to client
 func (Engine *btEng) addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torrent.Torrent, error) {
+	/* Adds spec to BitTorrent client */
 	t, new, err := Engine.Client.AddTorrentSpec(spec)
 	if err != nil {
 		return nil, err
 	}
+
+	/* Check if torrent is new then save its spec for persistence */
 	if new && !noSave {
 		sserr := saveSpec(spec)
 		if sserr != nil {
@@ -47,17 +50,23 @@ func (Engine *btEng) addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torren
 		}
 	}
 
+	// Wait for torrent info
+	<-t.GotInfo()
+
+	// Adds spec to custom torrent handler
 	Engine.addTorrentHandle(t, spec)
 
-	<-t.GotInfo()
 	return t, nil
 }
 
 // Get *torrent.Torrent from infohash
 func (Engine *btEng) getTorrHandle(infohash string) (*torrent.Torrent, error) {
+	/* Checks if infohash is 40 characters */
 	if len(infohash) != 40 {
 		return nil, errors.New("Invalid infohash")
 	}
+
+	/* Get torrent handle */
 	t, ok := Engine.Client.Torrent(metainfo.NewHashFromHex(infohash))
 	if !ok {
 		return nil, errors.New("Torrent not found")

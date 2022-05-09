@@ -8,7 +8,7 @@ go build -ldflags="-extldflags -static -w -s" -tags=nosqlite
 ```
 
 ## Usage
-`torrenttp [-dir DOWNLOADDIR] [-port PORT] -[-noup]`
+`torrenttp [-dir DOWNLOADDIR] [-port PORT] [-noup]`
 
 ## API
 

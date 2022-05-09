@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path/filepath"
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
@@ -87,7 +88,7 @@ func getTorrentFile(t *torrent.Torrent, displaypath string) (*torrent.File, erro
 // Create config for BitTorrent client with confs from args
 func newBtCliConfs(dir string, noup bool) *torrent.ClientConfig {
 	opts := torrent.NewDefaultClientConfig()
-	opts.DataDir = dir
+	opts.DataDir = filepath.Clean(dir)
 	opts.NoUpload = noup
 	return opts
 }

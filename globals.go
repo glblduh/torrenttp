@@ -61,8 +61,8 @@ type (
 		UlSpeedReadable string
 
 		/* Temporary */
-		DlLastProgress int64
-		UlLastProgress int64
+		LastDlBytes int64
+		LastUlBytes int64
 	}
 )
 

@@ -18,12 +18,6 @@ func main() {
 	// Creates the BitTorrent client with user args
 	btEngine.initialize(newBtCliConfs(*dirFlag, *noupFlag))
 
-	/* Outputs the download directory and upload status */
-	Info.Printf("Download directory is on: %s\n", btEngine.ClientConfig.DataDir)
-	if btEngine.ClientConfig.NoUpload {
-		Warn.Println("Upload is disabled")
-	}
-
 	/* Initilize DB */
 	dberr := createSpecBucket()
 	if dberr != nil {

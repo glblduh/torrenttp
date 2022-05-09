@@ -13,12 +13,21 @@ import (
 
 // Creates the BitTorrent client
 func (Engine *btEng) initialize(opts *torrent.ClientConfig) {
+	/* Make client with confs */
 	Engine.ClientConfig = opts
 	var err error
 	Engine.Client, err = torrent.NewClient(Engine.ClientConfig)
 	if err != nil {
 		Error.Fatalf("Cannot initialize BitTorrent client: %s", err)
 	}
+
+	/* Outputs the download directory and upload status */
+	Info.Printf("Download directory is on: %s\n", Engine.ClientConfig.DataDir)
+	if Engine.ClientConfig.NoUpload {
+		Warn.Println("Upload is disabled")
+	}
+
+	/* Initialize custom torrent map and speed calculator */
 	Engine.Torrents = make(map[string]*torrentHandle)
 	go btEngine.calculateSpeeds()
 }
@@ -86,9 +95,9 @@ func (Engine *btEng) calculateSpeeds() {
 		for k := range torrents {
 			/* Download speed */
 			curprog := torrents[k].Torrent.BytesCompleted()
-			torrents[k].DlSpeedBytes = curprog - torrents[k].DlLastProgress
+			torrents[k].DlSpeedBytes = (int64(time.Second) * (curprog - torrents[k].LastDlBytes)) / (int64(1 * time.Second))
+			torrents[k].LastDlBytes = curprog
 			torrents[k].DlSpeedReadable = humanize.Bytes(uint64(torrents[k].DlSpeedBytes)) + "/s"
-			torrents[k].DlLastProgress = curprog
 		}
 		time.Sleep(1 * time.Second)
 	}

@@ -1,6 +1,15 @@
 # torrenttp
 Simple REST API controlled BitTorrent client
 
+## Docker
+```
+docker run -d \
+--name torrenttp \
+-p 1010:1010 \
+--restart unless-stopped \
+glbl/torrenttp:latest
+```
+
 ## Compiling
 ```
 go mod download

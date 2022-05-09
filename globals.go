@@ -149,6 +149,8 @@ type (
 		HalfOpenPeers         int                            `json:"halfopenpeers"`
 		DownloadSpeedBytes    int                            `json:"downloadspeedbytes"`
 		DownloadSpeedReadable string                         `json:"downloadspeedreadable"`
+		UploadSpeedBytes      int                            `json:"uploadspeedbytes"`
+		UploadSpeedReadable   string                         `json:"uploadspeedreadable"`
 		Files                 apiTorrentStasResTorrentsFiles `json:"files"`
 	}
 

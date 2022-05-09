@@ -102,6 +102,7 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 		if tferr != nil {
 			continue
 		}
+		tf.Download()
 		saveSpecFile(t.InfoHash().String(), tf.DisplayPath())
 		res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 			FileName: tf.DisplayPath(),
@@ -222,6 +223,8 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 		tstats.HalfOpenPeers = v.Torrent.Stats().HalfOpenPeers
 		tstats.DownloadSpeedBytes = int(v.DlSpeedBytes)
 		tstats.DownloadSpeedReadable = v.DlSpeedReadable
+		tstats.UploadSpeedBytes = int(v.UlSpeedBytes)
+		tstats.UploadSpeedReadable = v.UlSpeedReadable
 
 		/* Setting the files available in the torrent */
 		for _, tf := range v.Torrent.Files() {

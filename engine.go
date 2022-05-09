@@ -117,11 +117,19 @@ func (Engine *btEng) calculateSpeeds() {
 
 	for {
 		for k := range torrents {
+			curstats := torrents[k].Torrent.Stats()
+
 			/* Download speed */
-			curprog := torrents[k].Torrent.BytesCompleted()
-			torrents[k].DlSpeedBytes = (int64(time.Second) * (curprog - torrents[k].LastDlBytes)) / (int64(1 * time.Second))
-			torrents[k].LastDlBytes = curprog
+			dlcurprog := curstats.BytesReadUsefulData.Int64()
+			torrents[k].DlSpeedBytes = (int64(time.Second) * (dlcurprog - torrents[k].LastDlBytes)) / int64(1*time.Second)
+			torrents[k].LastDlBytes = dlcurprog
 			torrents[k].DlSpeedReadable = humanize.Bytes(uint64(torrents[k].DlSpeedBytes)) + "/s"
+
+			/* Upload speed */
+			ulcurprog := curstats.BytesWrittenData.Int64()
+			torrents[k].UlSpeedBytes = (int64(time.Second) * (ulcurprog - torrents[k].LastUlBytes)) / int64(1*time.Second)
+			torrents[k].LastUlBytes = ulcurprog
+			torrents[k].UlSpeedReadable = humanize.Bytes(uint64(torrents[k].UlSpeedBytes)) + "/s"
 		}
 		time.Sleep(1 * time.Second)
 	}

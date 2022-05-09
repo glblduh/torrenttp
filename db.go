@@ -20,11 +20,14 @@ func openDB() (*bolt.DB, error) {
 }
 
 func createSpecBucket() error {
+	/* Opens DB file */
 	db, dberr := openDB()
 	if dberr != nil {
 		return dberr
 	}
 	defer db.Close()
+
+	/* Create TorrSpec bucket */
 	return db.Update(func(tx *bolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte("TorrSpecs"))
 		return nil
@@ -33,6 +36,7 @@ func createSpecBucket() error {
 
 // Saves torrent spec to database file
 func saveSpec(spec *torrent.TorrentSpec) error {
+	/* Marshal torrent spec to JSON persistentSpec */
 	json, err := json.Marshal(persistentSpec{
 		Trackers:                 spec.Trackers,
 		InfoHash:                 spec.InfoHash.String(),
@@ -53,11 +57,14 @@ func saveSpec(spec *torrent.TorrentSpec) error {
 
 // Commit a persistentSpec to DB
 func specToDB(infohash string, json []byte) error {
+	/* Opens DB file */
 	db, dberr := openDB()
 	if dberr != nil {
 		return dberr
 	}
 	defer db.Close()
+
+	/* Adds marshal'd spec to DB file */
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		return b.Put([]byte(strings.ToLower(infohash)), json)
@@ -66,11 +73,15 @@ func specToDB(infohash string, json []byte) error {
 
 // Loads all persistentSpec to BitTorrent client
 func loadPersist() error {
+	/* Get all specs from DB */
 	specs, err := getSpecs()
 	if err != nil {
 		return err
 	}
+
+	/* Iterates over all specs */
 	for _, spec := range specs {
+		/* Add spec to BitTorrent client */
 		t, terr := btEngine.addTorrent(persistSpecToTorrentSpec(spec), true)
 		if terr != nil {
 			Warn.Printf("Cannot load spec \"%s\": %s\n", spec.InfoHash, terr)
@@ -81,6 +92,8 @@ func loadPersist() error {
 			continue
 		}
 		Info.Printf("Loaded torrent \"%s\"\n", t.Name())
+
+		/* Start download of files in persistent spec */
 		for _, f := range spec.Files {
 			tf, tferr := getTorrentFile(t, f)
 			if tferr != nil {
@@ -96,11 +109,14 @@ func loadPersist() error {
 
 // Returns all persistentSpec in DB
 func getSpecs() ([]persistentSpec, error) {
+	/* Opens DB file */
 	db, dberr := openDB()
 	if dberr != nil {
 		return []persistentSpec{}, dberr
 	}
 	defer db.Close()
+
+	/* Iterates over all specs in DB to make array of specs */
 	specs := []persistentSpec{}
 	verr := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
@@ -120,10 +136,13 @@ func getSpecs() ([]persistentSpec, error) {
 
 // Get specific persistentSpec from infohash
 func getSpec(infohash string) (persistentSpec, error) {
+	/* Get all specs from DB */
 	specs, err := getSpecs()
 	if err != nil {
 		return persistentSpec{}, err
 	}
+
+	/* Returns specified spec */
 	for _, spec := range specs {
 		if spec.InfoHash == infohash {
 			return spec, nil
@@ -133,11 +152,14 @@ func getSpec(infohash string) (persistentSpec, error) {
 }
 
 func removeSpec(infohash string) error {
+	/* Opens DB file */
 	db, dberr := openDB()
 	if dberr != nil {
 		return dberr
 	}
 	defer db.Close()
+
+	/* Deletes spec */
 	return db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		return b.Delete([]byte(strings.ToLower(infohash)))

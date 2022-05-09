@@ -146,14 +146,26 @@ func removeSpec(infohash string) error {
 
 // Adds file of torrent to DB for persistence
 func saveSpecFile(infohash string, filename string) error {
+	/* Get persistence spec from infohash */
 	spec, err := getSpec(infohash)
 	if err != nil {
 		return err
 	}
+
+	/* Check for duplicates */
+	for _, f := range spec.Files {
+		if f == filename {
+			return nil
+		}
+	}
+
+	/* Remove unmodified spec */
 	rmerr := removeSpec(infohash)
 	if rmerr != nil {
 		return rmerr
 	}
+
+	/* Create new spec with file */
 	spec.Files = append(spec.Files, filename)
 	json, jerr := json.Marshal(&spec)
 	if jerr != nil {

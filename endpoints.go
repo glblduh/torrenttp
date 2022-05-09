@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/anacrolix/torrent"
@@ -121,12 +122,21 @@ func apiStreamTorrentFile(w http.ResponseWriter, r *http.Request) {
 	t, err := btEngine.getTorrHandle(vars["infohash"])
 	if err != nil {
 		errorRes(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	/* Unescape given filename */
+	fn, fnerr := url.QueryUnescape(vars["file"])
+	if fnerr != nil {
+		errorRes(w, "Filename unescaping error: "+fnerr.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	/* Get torrent file handle from filename */
-	f, ferr := getTorrentFile(t, vars["file"])
+	f, ferr := getTorrentFile(t, fn)
 	if ferr != nil {
 		errorRes(w, ferr.Error(), http.StatusNotFound)
+		return
 	}
 
 	/* Make torrent file reader for streaming */

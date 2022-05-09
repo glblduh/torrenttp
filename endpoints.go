@@ -12,7 +12,7 @@ import (
 // Endpoint handler for torrent adding to client
 func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 	var t *torrent.Torrent
-	var spec *torrent.TorrentSpec
+	var spec *torrent.TorrentSpec = nil
 	/* Decodes the request body */
 	body := apiAddTorrentBody{}
 	if decodeBody(w, r.Body, &body) != nil {
@@ -33,6 +33,11 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 	// If manual metainfo is present
 	if body.Magnet == "" && body.InfoHash != "" && body.DisplayName != "" {
 		spec = makeTorrentSpec(body.InfoHash, body.DisplayName, body.Trackers)
+	}
+
+	if spec == nil {
+		errorRes(w, "No torrent provided", http.StatusNotFound)
+		return
 	}
 
 	var terr error

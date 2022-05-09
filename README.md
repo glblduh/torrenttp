@@ -6,6 +6,7 @@ Simple REST API controlled BitTorrent client
 docker run -d \
 --name torrenttp \
 -p 1010:1010 \
+-v ~/tttpdl:/dl \
 --restart unless-stopped \
 glbl/torrenttp:latest
 ```

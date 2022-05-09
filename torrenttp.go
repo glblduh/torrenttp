@@ -23,11 +23,6 @@ func main() {
 	if dberr != nil {
 		Error.Fatalf("Cannot initialize DB: %s\n", dberr)
 	}
-	// Parses torrent specs in DB
-	lperr := loadPersist()
-	if lperr != nil {
-		Warn.Printf("Cannot load torrent specs: %s\n", lperr)
-	}
 
 	/* Initialize endpoints and HTTP server */
 	r := mux.NewRouter().StrictSlash(true)
@@ -47,5 +42,6 @@ func main() {
 		AllowCredentials: true,
 	}).Handler(r)
 
+	Info.Printf("Starting HTTP server on port: http://%s", *portFlag)
 	Error.Fatalln(http.ListenAndServe(*portFlag, c))
 }

@@ -76,6 +76,12 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	/* Check if no provided files */
+	if !body.AllFiles && len(body.Files) < 1 {
+		errorRes(w, "No files provided", http.StatusNotFound)
+		return
+	}
+
 	/* Gets torrent handler from client */
 	t, err := btEngine.getTorrHandle(body.InfoHash)
 	if err != nil {

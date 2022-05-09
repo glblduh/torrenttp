@@ -29,8 +29,9 @@ func (Engine *btEng) initialize(opts *torrent.ClientConfig) {
 		Warn.Println("Upload is disabled")
 	}
 
-	/* Initialize custom torrent map and speed calculator */
+	/* Initialize custom torrent map, persistent loader, and speed calculator */
 	Engine.Torrents = make(map[string]*torrentHandle)
+	go loadPersist()
 	go btEngine.calculateSpeeds()
 }
 
@@ -117,6 +118,10 @@ func (Engine *btEng) calculateSpeeds() {
 
 	for {
 		for k := range torrents {
+			/*
+				Work-around for the oddity cause by atomics
+				See: https://github.com/anacrolix/torrent/issues/745
+			*/
 			curstats := torrents[k].Torrent.Stats()
 
 			/* Download speed */

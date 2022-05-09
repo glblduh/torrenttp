@@ -72,11 +72,12 @@ func specToDB(infohash string, json []byte) error {
 }
 
 // Loads all persistentSpec to BitTorrent client
-func loadPersist() error {
+func loadPersist() {
 	/* Get all specs from DB */
 	specs, err := getSpecs()
 	if err != nil {
-		return err
+		Warn.Printf("Cannot get persistent specs: %s\n", err)
+		return
 	}
 
 	/* Iterates over all specs */
@@ -104,7 +105,7 @@ func loadPersist() error {
 			Info.Printf("Started download of file \"%s\"", tf.DisplayPath())
 		}
 	}
-	return nil
+	return
 }
 
 // Returns all persistentSpec in DB

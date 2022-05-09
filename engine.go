@@ -4,6 +4,8 @@ package main
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/anacrolix/torrent"
@@ -64,15 +66,28 @@ func (Engine *btEng) getTorrHandle(infohash string) (*torrent.Torrent, error) {
 }
 
 // Removes torrent from BitTorrent client and removes it's persistence spec
-func (Engine *btEng) dropTorrent(infohash string) error {
+func (Engine *btEng) dropTorrent(infohash string, rmfiles bool) error {
+	/* Get torrent handle */
 	t, err := Engine.getTorrHandle(infohash)
 	if err != nil {
 		return err
 	}
-	t.Drop()
+
+	/* Remove torrent handles */
 	Engine.removeTorrentHandle(infohash)
+	t.Drop()
+
+	/* Removes torrent persistence spec */
 	rmerr := removeSpec(t.InfoHash().String())
-	return rmerr
+	if rmerr != nil {
+		return rmerr
+	}
+
+	/* Removes torrent files */
+	if rmfiles {
+		return os.RemoveAll(filepath.Join(Engine.ClientConfig.DataDir, t.Name()))
+	}
+	return nil
 }
 
 // Adds torrent handle to custom torrent handler

@@ -125,7 +125,8 @@ type (
 
 	// Expected request body to removeTorrent
 	apiRemoveTorrentBody struct {
-		InfoHash string `json:"infohash"`
+		InfoHash    string `json:"infohash"`
+		RemoveFiles bool   `json:"removefiles"`
 	}
 
 	// Expected response body from removeTorrent

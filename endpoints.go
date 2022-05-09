@@ -159,8 +159,7 @@ func apiRemoveTorrent(w http.ResponseWriter, r *http.Request) {
 	ih := t.InfoHash().String()
 
 	/* Remover function */
-	btEngine.removeTorrentHandle(ih)
-	rmerr := removeSpec(ih)
+	rmerr := btEngine.dropTorrent(ih, body.RemoveFiles)
 	if rmerr != nil {
 		errorRes(w, "Torrent removal error: "+rmerr.Error(), http.StatusInternalServerError)
 		return

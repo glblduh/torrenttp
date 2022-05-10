@@ -69,6 +69,13 @@ For manual infohash, display name, and trackers
 /api/stream/:infohash/:filename
 ```
 
+### Download a file from torrent
+`GET /api/file`
+
+```
+/api/file/:infohash/:filename
+```
+
 ### Getting torrent stats
 `GET /api/torrents`
 

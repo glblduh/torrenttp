@@ -120,7 +120,8 @@ type (
 	// Struct for selectFile Files
 	apiTorrentSelectFileResFiles struct {
 		FileName string `json:"filename"`
-		Link     string `json:"link"`
+		Stream   string `json:"stream"`
+		Download string `json:"download"`
 	}
 
 	// Expected request body to removeTorrent
@@ -163,6 +164,7 @@ type (
 		FileName        string `json:"filename"`
 		FileSizeBytes   int    `json:"filesizebytes"`
 		BytesDownloaded int    `json:"bytesdownloaded"`
-		Link            string `json:"link"`
+		Stream          string `json:"stream"`
+		Download        string `json:"download"`
 	}
 )

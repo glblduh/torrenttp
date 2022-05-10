@@ -28,10 +28,17 @@ func main() {
 	r := mux.NewRouter().StrictSlash(true)
 
 	/* Handlers for endpoints */
+
+	/* POST */
 	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
 	r.HandleFunc("/api/selectfile", apiTorrentSelectFile).Methods("POST")
-	r.HandleFunc("/api/stream/{infohash}/{file:.*}", apiStreamTorrentFile).Methods("GET")
+
+	/* DELETE */
 	r.HandleFunc("/api/removetorrent", apiRemoveTorrent).Methods("DELETE")
+
+	/* GET */
+	r.HandleFunc("/api/stream/{infohash}/{file:.*}", apiStreamTorrentFile).Methods("GET")
+	r.HandleFunc("/api/file/{infohash}/{file:.*}", apiDownloadFile).Methods("GET")
 	r.HandleFunc("/api/torrents", apiTorrentStats).Methods("GET")
 	r.HandleFunc("/api/torrents/{infohash}", apiTorrentStats).Methods("GET")
 

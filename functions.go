@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strings"
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
@@ -70,9 +71,14 @@ func persistSpecToTorrentSpec(spec persistentSpec) *torrent.TorrentSpec {
 	}
 }
 
-// Creates a URL for the stream of file
-func createFileLink(infohash string, filename string) string {
-	return "/api/stream/" + infohash + "/" + url.QueryEscape(filename)
+// Creates a URL for the stream and download of file
+func createFileLink(infohash string, filename string, isFile bool) string {
+	verb := "stream"
+	if isFile {
+		verb = "file"
+	}
+	return "/api/" + verb + "/" + infohash + "/" + url.QueryEscape(filename)
+
 }
 
 // Get the file handle inside the torrent
@@ -91,4 +97,9 @@ func newBtCliConfs(dir string, noup bool) *torrent.ClientConfig {
 	opts.DataDir = filepath.Clean(dir)
 	opts.NoUpload = noup
 	return opts
+}
+
+// Replaces slashes in DisplayPath as " - " for safety in downloading
+func safenDisplayPath(displaypath string) string {
+	return strings.Join(strings.Split(displaypath, "/"), " - ")
 }

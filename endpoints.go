@@ -102,7 +102,8 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 			saveSpecFile(t.InfoHash().String(), f.DisplayPath())
 			res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 				FileName: f.DisplayPath(),
-				Link:     createFileLink(t.InfoHash().String(), f.DisplayPath()),
+				Stream:   createFileLink(t.InfoHash().String(), f.DisplayPath(), false),
+				Download: createFileLink(t.InfoHash().String(), f.DisplayPath(), true),
 			})
 		}
 	}
@@ -117,7 +118,8 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 		saveSpecFile(t.InfoHash().String(), tf.DisplayPath())
 		res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 			FileName: tf.DisplayPath(),
-			Link:     createFileLink(t.InfoHash().String(), tf.DisplayPath()),
+			Stream:   createFileLink(t.InfoHash().String(), tf.DisplayPath(), false),
+			Download: createFileLink(t.InfoHash().String(), tf.DisplayPath(), true),
 		})
 	}
 
@@ -250,7 +252,8 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 					FileName:        tfname,
 					FileSizeBytes:   tfsize,
 					BytesDownloaded: int(tf.BytesCompleted()),
-					Link:            createFileLink(tstats.InfoHash, tfname),
+					Stream:          createFileLink(tstats.InfoHash, tfname, false),
+					Download:        createFileLink(tstats.InfoHash, tfname, true),
 				})
 			}
 		}
@@ -261,5 +264,46 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 
 	/* Send response */
 	encodeRes(w, &res)
+	return
+}
+
+func apiDownloadFile(w http.ResponseWriter, r *http.Request) {
+	/* Get infohash and filename vars*/
+	vars := mux.Vars(r)
+
+	/* Get torrent handle from infohash */
+	t, err := btEngine.getTorrHandle(vars["infohash"])
+	if err != nil {
+		errorRes(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	/* Unescape given filename */
+	fn, fnerr := url.QueryUnescape(vars["file"])
+	if fnerr != nil {
+		errorRes(w, "Filename unescaping error: "+fnerr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	/* Get torrent file handle from filename */
+	f, ferr := getTorrentFile(t, fn)
+	if ferr != nil {
+		errorRes(w, ferr.Error(), http.StatusNotFound)
+		return
+	}
+
+	/* Check if file is finished downloading */
+	if f.BytesCompleted() != f.Length() {
+		errorRes(w, "File is not completed", http.StatusAccepted)
+		return
+	}
+
+	/* Set Content-Disposition as f.DisplayPath() */
+	w.Header().Add("Content-Disposition", "attachment; filename=\""+safenDisplayPath(f.DisplayPath())+"\"")
+
+	/* Send file as response */
+	reader := f.NewReader()
+	defer reader.Close()
+	http.ServeContent(w, r, f.DisplayPath(), time.Now(), reader)
 	return
 }

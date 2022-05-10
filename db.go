@@ -15,7 +15,7 @@ import (
 func openDB() (*bbolt.DB, error) {
 	return bbolt.Open(
 		filepath.Join(btEngine.ClientConfig.DataDir, ".torrserve.db"),
-		0o600,
+		0600,
 		nil)
 }
 

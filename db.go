@@ -9,11 +9,11 @@ import (
 	"strings"
 
 	"github.com/anacrolix/torrent"
-	"github.com/boltdb/bolt"
+	"go.etcd.io/bbolt"
 )
 
-func openDB() (*bolt.DB, error) {
-	return bolt.Open(
+func openDB() (*bbolt.DB, error) {
+	return bbolt.Open(
 		filepath.Join(btEngine.ClientConfig.DataDir, ".torrserve.db"),
 		0o600,
 		nil)
@@ -28,7 +28,7 @@ func createSpecBucket() error {
 	defer db.Close()
 
 	/* Create TorrSpec bucket */
-	return db.Update(func(tx *bolt.Tx) error {
+	return db.Update(func(tx *bbolt.Tx) error {
 		tx.CreateBucketIfNotExists([]byte("TorrSpecs"))
 		return nil
 	})
@@ -65,7 +65,7 @@ func specToDB(infohash string, json []byte) error {
 	defer db.Close()
 
 	/* Adds marshal'd spec to DB file */
-	return db.Update(func(tx *bolt.Tx) error {
+	return db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		return b.Put([]byte(strings.ToLower(infohash)), json)
 	})
@@ -119,7 +119,7 @@ func getSpecs() ([]persistentSpec, error) {
 
 	/* Iterates over all specs in DB to make array of specs */
 	specs := []persistentSpec{}
-	verr := db.View(func(tx *bolt.Tx) error {
+	verr := db.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		c := b.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -161,7 +161,7 @@ func removeSpec(infohash string) error {
 	defer db.Close()
 
 	/* Deletes spec */
-	return db.Update(func(tx *bolt.Tx) error {
+	return db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket([]byte("TorrSpecs"))
 		return b.Delete([]byte(strings.ToLower(infohash)))
 	})

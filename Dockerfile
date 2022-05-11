@@ -13,4 +13,5 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-w -s
 FROM gcr.io/distroless/base
 COPY --from=builder /builder/torrenttp /torrenttp
 EXPOSE 1010
+VOLUME [ "/dl" ]
 ENTRYPOINT ["/torrenttp", "-dir", "/dl"]

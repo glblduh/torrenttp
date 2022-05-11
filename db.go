@@ -7,6 +7,7 @@ import (
 	"errors"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/anacrolix/torrent"
 	"go.etcd.io/bbolt"
@@ -15,8 +16,10 @@ import (
 func openDB() (*bbolt.DB, error) {
 	return bbolt.Open(
 		filepath.Join(btEngine.ClientConfig.DataDir, ".torrserve.db"),
-		0600,
-		nil)
+		0660,
+		&bbolt.Options{
+			Timeout: time.Second,
+		})
 }
 
 func createSpecBucket() error {

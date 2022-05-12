@@ -18,11 +18,12 @@ func main() {
 	// Creates the BitTorrent client with user args
 	btEngine.initialize(newBtCliConfs(*dirFlag, *noupFlag))
 
-	/* Initilize DB */
+	/* Initilize DB and load persistent specs */
 	dberr := createSpecBucket()
 	if dberr != nil {
 		Error.Fatalf("Cannot initialize DB: %s\n", dberr)
 	}
+	go loadPersist()
 
 	/* Initialize endpoints and HTTP server */
 	r := mux.NewRouter().StrictSlash(true)

@@ -29,9 +29,8 @@ func (Engine *btEng) initialize(opts *torrent.ClientConfig) {
 		Warn.Println("Upload is disabled")
 	}
 
-	/* Initialize custom torrent map, persistent loader, and speed calculator */
+	/* Initialize custom torrent map and speed calculator */
 	Engine.Torrents = make(map[string]*torrentHandle)
-	go loadPersist()
 	go btEngine.calculateSpeeds()
 }
 

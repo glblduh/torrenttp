@@ -114,6 +114,7 @@ func (Engine *btEng) removeTorrentHandle(infohash string) {
 
 func (Engine *btEng) calculateSpeeds() {
 	torrents := Engine.Torrents
+	interval := time.Second
 
 	for {
 		for k := range torrents {
@@ -124,17 +125,17 @@ func (Engine *btEng) calculateSpeeds() {
 			curstats := torrents[k].Torrent.Stats()
 
 			/* Download speed */
-			dlcurprog := curstats.BytesReadUsefulData.Int64()
-			torrents[k].DlSpeedBytes = (int64(time.Second) * (dlcurprog - torrents[k].LastDlBytes)) / int64(1*time.Second)
+			dlcurprog := curstats.BytesRead.Int64()
+			torrents[k].DlSpeedBytes = (int64(interval) * (dlcurprog - torrents[k].LastDlBytes)) / int64(interval)
 			torrents[k].LastDlBytes = dlcurprog
 			torrents[k].DlSpeedReadable = humanize.Bytes(uint64(torrents[k].DlSpeedBytes)) + "/s"
 
 			/* Upload speed */
-			ulcurprog := curstats.BytesWrittenData.Int64()
-			torrents[k].UlSpeedBytes = (int64(time.Second) * (ulcurprog - torrents[k].LastUlBytes)) / int64(1*time.Second)
+			ulcurprog := curstats.BytesWritten.Int64()
+			torrents[k].UlSpeedBytes = (int64(interval) * (ulcurprog - torrents[k].LastUlBytes)) / int64(interval)
 			torrents[k].LastUlBytes = ulcurprog
 			torrents[k].UlSpeedReadable = humanize.Bytes(uint64(torrents[k].UlSpeedBytes)) + "/s"
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(interval)
 	}
 }

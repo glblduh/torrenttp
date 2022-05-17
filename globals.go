@@ -142,17 +142,15 @@ type (
 	}
 
 	apiTorrentStasResTorrents struct {
-		Name                  string                         `json:"name"`
-		InfoHash              string                         `json:"infohash"`
-		TotalPeers            int                            `json:"totalpeers"`
-		ActivePeers           int                            `json:"activepeers"`
-		PendingPeers          int                            `json:"pendingpeers"`
-		HalfOpenPeers         int                            `json:"halfopenpeers"`
-		DownloadSpeedBytes    int                            `json:"downloadspeedbytes"`
-		DownloadSpeedReadable string                         `json:"downloadspeedreadable"`
-		UploadSpeedBytes      int                            `json:"uploadspeedbytes"`
-		UploadSpeedReadable   string                         `json:"uploadspeedreadable"`
-		Files                 apiTorrentStasResTorrentsFiles `json:"files"`
+		Name          string                         `json:"name"`
+		InfoHash      string                         `json:"infohash"`
+		TotalPeers    int                            `json:"totalpeers"`
+		ActivePeers   int                            `json:"activepeers"`
+		PendingPeers  int                            `json:"pendingpeers"`
+		HalfOpenPeers int                            `json:"halfopenpeers"`
+		DownloadSpeed string                         `json:"downloadspeed"`
+		UploadSpeed   string                         `json:"uploadspeed"`
+		Files         apiTorrentStasResTorrentsFiles `json:"files"`
 	}
 
 	apiTorrentStasResTorrentsFiles struct {

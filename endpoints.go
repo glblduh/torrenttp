@@ -97,7 +97,13 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 
 	// If AllFiles is toggled
 	if body.AllFiles {
+		// Empties the Files slice to prevent the execution of the code below when AllFiles if toggled
+		body.Files = nil
+
+		// Starts download for all files in the torrent
 		t.DownloadAll()
+
+		/* Go through the selected files to append its info to the response */
 		for _, f := range t.Files() {
 			saveSpecFile(t.InfoHash().String(), f.DisplayPath())
 			res.Files = append(res.Files, apiTorrentSelectFileResFiles{
@@ -110,12 +116,19 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 
 	// If specific files are selected
 	for _, f := range body.Files {
+		/* Get the handle of the torrent file from its DisplayPath */
 		tf, tferr := getTorrentFile(t, f)
 		if tferr != nil {
 			continue
 		}
+
+		// Starts download of said torrent file
 		tf.Download()
+
+		// Save the filename to the DB for persistence
 		saveSpecFile(t.InfoHash().String(), tf.DisplayPath())
+
+		/* Go through the selected files to append its info to the response */
 		res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 			FileName: tf.DisplayPath(),
 			Stream:   createFileLink(t.InfoHash().String(), tf.DisplayPath(), false),

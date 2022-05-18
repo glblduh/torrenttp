@@ -237,6 +237,7 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 		tstats.HalfOpenPeers = v.Torrent.Stats().HalfOpenPeers
 		tstats.DownloadSpeed = v.DlSpeedReadable
 		tstats.UploadSpeed = v.UlSpeedReadable
+		tstats.Progress = calcTorrentProgress(v.Torrent)
 
 		/* Setting the files available in the torrent */
 		for _, tf := range v.Torrent.Files() {

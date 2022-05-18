@@ -150,6 +150,7 @@ type (
 		HalfOpenPeers int                            `json:"halfopenpeers"`
 		DownloadSpeed string                         `json:"downloadspeed"`
 		UploadSpeed   string                         `json:"uploadspeed"`
+		Progress      string                         `json:"progress"`
 		Files         apiTorrentStasResTorrentsFiles `json:"files"`
 	}
 

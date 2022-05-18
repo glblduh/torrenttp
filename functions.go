@@ -14,6 +14,7 @@ import (
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
+	"github.com/dustin/go-humanize"
 )
 
 // Function for sending error message as JSON response
@@ -129,4 +130,10 @@ func createAddTorrentRes(t *torrent.Torrent) apiAddTorrentRes {
 		})
 	}
 	return res
+}
+
+func calcTorrentProgress(t *torrent.Torrent) string {
+	torrcompleted := t.BytesCompleted()
+	torrlen := t.Length()
+	return humanize.Bytes(uint64(torrcompleted)) + "/" + humanize.Bytes(uint64(torrlen))
 }

@@ -5,8 +5,9 @@ Simple REST API controlled BitTorrent client
 ```
 docker run -d \
 --name torrenttp \
--p 1010:1010 \
--v ~/tttpdl:/dl \
+-p 1010:1010 \ # Change the 1010 on the left to change the listening port
+-v ~/tttpdl:/dl \ # Change the ~/tttpdl to the download path
+-e NOUP=false \ # Set to true to disable uploads
 --restart unless-stopped \
 glbl/torrenttp:latest
 ```

@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -94,6 +95,13 @@ func getTorrentFile(t *torrent.Torrent, displaypath string) (*torrent.File, erro
 // Create config for BitTorrent client with confs from args
 func newBtCliConfs(dir string, noup bool) *torrent.ClientConfig {
 	opts := torrent.NewDefaultClientConfig()
+
+	/* Disables upload if ENV variable is set to true */
+	if os.Getenv("NOUP") == "true" {
+		noup = true
+	}
+
+	/* Sets the variables */
 	opts.DataDir = filepath.Clean(dir)
 	opts.NoUpload = noup
 	return opts

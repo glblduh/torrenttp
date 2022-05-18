@@ -15,8 +15,10 @@ import (
 
 // Creates the BitTorrent client
 func (Engine *btEng) initialize(opts *torrent.ClientConfig) {
-	/* Make client with confs */
+	// Saves the given config to the Engine
 	Engine.ClientConfig = opts
+
+	/* Make client with confs */
 	var err error
 	Engine.Client, err = torrent.NewClient(Engine.ClientConfig)
 	if err != nil {

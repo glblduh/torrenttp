@@ -111,3 +111,22 @@ func newBtCliConfs(dir string, noup bool) *torrent.ClientConfig {
 func safenDisplayPath(displaypath string) string {
 	return strings.Join(strings.Split(displaypath, "/"), " - ")
 }
+
+// Create response for apiAddTorrent and apiAddTorrentFile
+func createAddTorrentRes(t *torrent.Torrent) apiAddTorrentRes {
+	res := apiAddTorrentRes{
+		Name:          t.Name(),
+		InfoHash:      t.InfoHash().String(),
+		TotalPeers:    t.Stats().TotalPeers,
+		ActivePeers:   t.Stats().ActivePeers,
+		PendingPeers:  t.Stats().PendingPeers,
+		HalfOpenPeers: t.Stats().HalfOpenPeers,
+	}
+	for _, f := range t.Files() {
+		res.Files = append(res.Files, apiTorrentFiles{
+			FileName:      f.DisplayPath(),
+			FileSizeBytes: int(f.Length()),
+		})
+	}
+	return res
+}

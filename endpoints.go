@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/anacrolix/torrent"
+	"github.com/anacrolix/torrent/metainfo"
 	"github.com/gorilla/mux"
 )
 
@@ -48,20 +49,7 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	/* Creates the response body*/
-	res := apiAddTorrentRes{
-		Name:          t.Name(),
-		InfoHash:      t.InfoHash().String(),
-		TotalPeers:    t.Stats().TotalPeers,
-		ActivePeers:   t.Stats().ActivePeers,
-		PendingPeers:  t.Stats().PendingPeers,
-		HalfOpenPeers: t.Stats().HalfOpenPeers,
-	}
-	for _, f := range t.Files() {
-		res.Files = append(res.Files, apiTorrentFiles{
-			FileName:      f.DisplayPath(),
-			FileSizeBytes: int(f.Length()),
-		})
-	}
+	res := createAddTorrentRes(t)
 	encodeRes(w, &res)
 	return
 }
@@ -316,5 +304,40 @@ func apiDownloadFile(w http.ResponseWriter, r *http.Request) {
 	reader := f.NewReader()
 	defer reader.Close()
 	http.ServeContent(w, r, f.DisplayPath(), time.Now(), reader)
+	return
+}
+
+func apiAddTorrentFile(w http.ResponseWriter, r *http.Request) {
+	/* Gets file from form */
+	torrfile, _, err := r.FormFile("torrent")
+	if err != nil {
+		errorRes(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer torrfile.Close()
+
+	/* Loads torrent file to the BitTorrent client */
+	/* Loads the torrent file as a MetaInfo */
+	mi, mierr := metainfo.Load(torrfile)
+	if mierr != nil {
+		errorRes(w, mierr.Error(), http.StatusInternalServerError)
+		return
+	}
+	/* Makes torrent spec from given MetaInfo */
+	spec, specerr := torrent.TorrentSpecFromMetaInfoErr(mi)
+	if specerr != nil {
+		errorRes(w, specerr.Error(), http.StatusInternalServerError)
+		return
+	}
+	/* Adds torrent spec to the BitTorrent client */
+	t, terr := btEngine.addTorrent(spec, false)
+	if terr != nil {
+		errorRes(w, terr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	/* Create response */
+	res := createAddTorrentRes(t)
+	encodeRes(w, &res)
 	return
 }

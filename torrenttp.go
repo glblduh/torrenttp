@@ -33,6 +33,7 @@ func main() {
 	/* POST */
 	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
 	r.HandleFunc("/api/selectfile", apiTorrentSelectFile).Methods("POST")
+	r.HandleFunc("/api/addtorrentfile", apiAddTorrentFile).Methods("POST")
 
 	/* DELETE */
 	r.HandleFunc("/api/removetorrent", apiRemoveTorrent).Methods("DELETE")

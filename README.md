@@ -42,6 +42,11 @@ For manual infohash, display name, and trackers
 }
 ```
 
+### Uploading a torrent file
+`POST /api/addtorrentfile`
+
+Attach the file in the `torrent` field in `multipart/form-data`
+
 ### Selecting a file for download
 `POST /api/selectfile`
 

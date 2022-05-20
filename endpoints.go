@@ -242,20 +242,16 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 		/* Setting the files available in the torrent */
 		for _, tf := range v.Torrent.Files() {
 			tfname := tf.DisplayPath()
-			tfsize := int(tf.Length())
-			tstats.Files.OnTorrent = append(tstats.Files.OnTorrent, apiTorrentFiles{
-				FileName:      tfname,
-				FileSizeBytes: tfsize,
-			})
-			if tf.BytesCompleted() > 0 {
-				tstats.Files.OnDisk = append(tstats.Files.OnDisk, apiTorrentStatsTorrentsFilesOnDisk{
-					FileName:        tfname,
-					FileSizeBytes:   tfsize,
-					BytesDownloaded: int(tf.BytesCompleted()),
-					Stream:          createFileLink(tstats.InfoHash, tfname, false),
-					Download:        createFileLink(tstats.InfoHash, tfname, true),
-				})
+			curf := apiTorrentStatsTorrentsFiles{
+				FileName:        tfname,
+				FileSizeBytes:   int(tf.Length()),
+				BytesDownloaded: int(tf.BytesCompleted()),
 			}
+			if tf.BytesCompleted() > 0 {
+				curf.Stream = createFileLink(tstats.InfoHash, tfname, false)
+				curf.Download = createFileLink(tstats.InfoHash, tfname, true)
+			}
+			tstats.Files = append(tstats.Files, curf)
 		}
 
 		/* Append it response body */

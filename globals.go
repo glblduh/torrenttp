@@ -151,19 +151,14 @@ type (
 		DownloadSpeed string                         `json:"downloadspeed"`
 		UploadSpeed   string                         `json:"uploadspeed"`
 		Progress      string                         `json:"progress"`
-		Files         apiTorrentStasResTorrentsFiles `json:"files"`
+		Files         []apiTorrentStatsTorrentsFiles `json:"files"`
 	}
 
-	apiTorrentStasResTorrentsFiles struct {
-		OnTorrent []apiTorrentFiles                    `json:"ontorrent"`
-		OnDisk    []apiTorrentStatsTorrentsFilesOnDisk `json:"ondisk"`
-	}
-
-	apiTorrentStatsTorrentsFilesOnDisk struct {
+	apiTorrentStatsTorrentsFiles struct {
 		FileName        string `json:"filename"`
 		FileSizeBytes   int    `json:"filesizebytes"`
 		BytesDownloaded int    `json:"bytesdownloaded"`
-		Stream          string `json:"stream"`
-		Download        string `json:"download"`
+		Stream          string `json:"stream,omitempty"`
+		Download        string `json:"download,omitempty"`
 	}
 )

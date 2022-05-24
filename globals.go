@@ -99,8 +99,9 @@ type (
 
 	// Struct for files in torrent
 	apiTorrentFiles struct {
-		FileName      string `json:"filename"`
-		FileSizeBytes int    `json:"filesizebytes"`
+		FileName         string `json:"filename"`
+		FileSizeBytes    int    `json:"filesizebytes"`
+		FileSizeReadable string `json:"filesize"`
 	}
 
 	// Expected request body to selectFile
@@ -155,10 +156,12 @@ type (
 	}
 
 	apiTorrentStatsTorrentsFiles struct {
-		FileName        string `json:"filename"`
-		FileSizeBytes   int    `json:"filesizebytes"`
-		BytesDownloaded int    `json:"bytesdownloaded"`
-		Stream          string `json:"stream,omitempty"`
-		Download        string `json:"download,omitempty"`
+		FileName           string `json:"filename"`
+		FileSizeBytes      int    `json:"filesizebytes"`
+		FileSizeReadable   string `json:"filesize"`
+		DownloadedBytes    int    `json:"downloadedbytes"`
+		DownloadedReadable string `json:"downloaded"`
+		Stream             string `json:"stream,omitempty"`
+		Download           string `json:"download,omitempty"`
 	}
 )

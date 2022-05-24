@@ -7,6 +7,7 @@ import (
 
 	"github.com/anacrolix/torrent"
 	"github.com/anacrolix/torrent/metainfo"
+	"github.com/dustin/go-humanize"
 	"github.com/gorilla/mux"
 )
 
@@ -242,10 +243,14 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 		/* Setting the files available in the torrent */
 		for _, tf := range v.Torrent.Files() {
 			tfname := tf.DisplayPath()
+			tfbc := tf.BytesCompleted()
+			tflen := tf.Length()
 			curf := apiTorrentStatsTorrentsFiles{
-				FileName:        tfname,
-				FileSizeBytes:   int(tf.Length()),
-				BytesDownloaded: int(tf.BytesCompleted()),
+				FileName:           tfname,
+				FileSizeBytes:      int(tflen),
+				FileSizeReadable:   humanize.Bytes(uint64(tflen)),
+				DownloadedBytes:    int(tfbc),
+				DownloadedReadable: humanize.Bytes(uint64(tfbc)),
 			}
 			if tf.BytesCompleted() > 0 {
 				curf.Stream = createFileLink(tstats.InfoHash, tfname, false)

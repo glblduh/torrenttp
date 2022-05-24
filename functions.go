@@ -124,9 +124,11 @@ func createAddTorrentRes(t *torrent.Torrent) apiAddTorrentRes {
 		HalfOpenPeers: t.Stats().HalfOpenPeers,
 	}
 	for _, f := range t.Files() {
+		tfsz := f.Length()
 		res.Files = append(res.Files, apiTorrentFiles{
-			FileName:      f.DisplayPath(),
-			FileSizeBytes: int(f.Length()),
+			FileName:         f.DisplayPath(),
+			FileSizeBytes:    int(tfsz),
+			FileSizeReadable: humanize.Bytes(uint64(tfsz)),
 		})
 	}
 	return res

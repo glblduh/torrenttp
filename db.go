@@ -95,7 +95,6 @@ func loadPersist() {
 			}
 			continue
 		}
-		Info.Printf("Loaded torrent \"%s\"\n", t.Name())
 
 		/* Start download of files in persistent spec */
 		for _, f := range spec.Files {
@@ -105,7 +104,6 @@ func loadPersist() {
 				continue
 			}
 			tf.Download()
-			Info.Printf("Started download of file \"%s\"", tf.DisplayPath())
 		}
 	}
 	return

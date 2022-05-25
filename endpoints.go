@@ -240,6 +240,14 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 		tstats.UploadSpeed = v.UlSpeedReadable
 		tstats.Progress = calcTorrentProgress(v.Torrent)
 
+		/* Setting the peers info */
+		for _, peer := range v.Torrent.PeerConns() {
+			tstats.Peers = append(tstats.Peers, apiTorrentStatsPeersInfo{
+				PeerAddr:   peer.Peer.RemoteAddr.String(),
+				PeerClient: peer.Peer.PeerClientName.Load().(string),
+			})
+		}
+
 		/* Setting the files available in the torrent */
 		for _, tf := range v.Torrent.Files() {
 			tfname := tf.DisplayPath()

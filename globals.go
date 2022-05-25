@@ -149,6 +149,7 @@ type (
 		ActivePeers   int                            `json:"activepeers"`
 		PendingPeers  int                            `json:"pendingpeers"`
 		HalfOpenPeers int                            `json:"halfopenpeers"`
+		Peers         []apiTorrentStatsPeersInfo     `json:"peers"`
 		DownloadSpeed string                         `json:"downloadspeed"`
 		UploadSpeed   string                         `json:"uploadspeed"`
 		Progress      string                         `json:"progress"`
@@ -163,5 +164,10 @@ type (
 		DownloadedReadable string `json:"downloaded"`
 		Stream             string `json:"stream,omitempty"`
 		Download           string `json:"download,omitempty"`
+	}
+
+	apiTorrentStatsPeersInfo struct {
+		PeerAddr   string `json:"peeraddr"`
+		PeerClient string `json:"peercli"`
 	}
 )

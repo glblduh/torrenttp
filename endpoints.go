@@ -242,9 +242,15 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 
 		/* Setting the peers info */
 		for _, peer := range v.Torrent.PeerConns() {
+			paddr := peer.Peer.RemoteAddr.String()
+			pcli, ok := peer.Peer.PeerClientName.Load().(string)
+			if !ok {
+				pcli = "NOTPROVIDED"
+			}
+
 			tstats.Peers = append(tstats.Peers, apiTorrentStatsPeersInfo{
-				PeerAddr:   peer.Peer.RemoteAddr.String(),
-				PeerClient: peer.Peer.PeerClientName.Load().(string),
+				PeerAddr:   paddr,
+				PeerClient: pcli,
 			})
 		}
 

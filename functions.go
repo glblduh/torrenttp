@@ -23,6 +23,7 @@ func errorRes(w http.ResponseWriter, error string, code int) {
 		Error: error,
 	})
 	if err != nil {
+		w.WriteHeader(code)
 		w.Write([]byte(error))
 	}
 }
@@ -90,7 +91,7 @@ func getTorrentFile(t *torrent.Torrent, displaypath string) (*torrent.File, erro
 			return f, nil
 		}
 	}
-	return nil, errors.New("File not found")
+	return nil, errors.New("file not found")
 }
 
 // Create config for BitTorrent client with confs from args

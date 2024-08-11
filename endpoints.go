@@ -52,7 +52,6 @@ func apiAddTorrent(w http.ResponseWriter, r *http.Request) {
 	/* Creates the response body*/
 	res := createAddTorrentRes(t)
 	encodeRes(w, &res)
-	return
 }
 
 // Endpoint for selecting which file/s to download
@@ -126,7 +125,6 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encodeRes(w, &res)
-	return
 }
 
 // Endpoint for streaming a file
@@ -162,7 +160,6 @@ func apiStreamTorrentFile(w http.ResponseWriter, r *http.Request) {
 	reader.SetReadahead(f.Length() / 100)
 	// Send the reader as HTTP response
 	http.ServeContent(w, r, f.DisplayPath(), time.Now(), reader)
-	return
 }
 
 // Endpoint for removing a torrent
@@ -197,7 +194,6 @@ func apiRemoveTorrent(w http.ResponseWriter, r *http.Request) {
 		InfoHash: ih,
 	}
 	encodeRes(w, &res)
-	return
 }
 
 // Torrent stats endpoint
@@ -243,7 +239,7 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 		/* Setting the peers info */
 		for _, peer := range v.Torrent.PeerConns() {
 			paddr := peer.Peer.RemoteAddr.String()
-			pcli, ok := peer.Peer.PeerClientName.Load().(string)
+			pcli, ok := peer.PeerClientName.Load().(string)
 			if !ok {
 				pcli = "NOTPROVIDED"
 			}
@@ -279,7 +275,6 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 
 	/* Send response */
 	encodeRes(w, &res)
-	return
 }
 
 func apiDownloadFile(w http.ResponseWriter, r *http.Request) {
@@ -320,7 +315,6 @@ func apiDownloadFile(w http.ResponseWriter, r *http.Request) {
 	reader := f.NewReader()
 	defer reader.Close()
 	http.ServeContent(w, r, f.DisplayPath(), time.Now(), reader)
-	return
 }
 
 func apiAddTorrentFile(w http.ResponseWriter, r *http.Request) {
@@ -355,5 +349,4 @@ func apiAddTorrentFile(w http.ResponseWriter, r *http.Request) {
 	/* Create response */
 	res := createAddTorrentRes(t)
 	encodeRes(w, &res)
-	return
 }

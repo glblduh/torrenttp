@@ -106,7 +106,6 @@ func loadPersist() {
 			tf.Download()
 		}
 	}
-	return
 }
 
 // Returns all persistentSpec in DB
@@ -150,7 +149,7 @@ func getSpec(infohash string) (persistentSpec, error) {
 			return spec, nil
 		}
 	}
-	return persistentSpec{}, errors.New("Torrent spec not found")
+	return persistentSpec{}, errors.New("torrent spec not found")
 }
 
 func removeSpec(infohash string) error {

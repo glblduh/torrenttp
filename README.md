@@ -1,7 +1,7 @@
 # torrenttp
 Simple REST API controlled BitTorrent client
 
-## Docker
+## Docker (deprecated)
 ```
 docker run -d \
 --name torrenttp \

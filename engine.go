@@ -65,13 +65,13 @@ func (Engine *btEng) addTorrent(spec *torrent.TorrentSpec, noSave bool) (*torren
 func (Engine *btEng) getTorrHandle(infohash string) (*torrent.Torrent, error) {
 	/* Checks if infohash is 40 characters */
 	if len(infohash) != 40 {
-		return nil, errors.New("Invalid infohash")
+		return nil, errors.New("invalid infohash")
 	}
 
 	/* Get torrent handle */
 	t, ok := Engine.Client.Torrent(metainfo.NewHashFromHex(infohash))
 	if !ok {
-		return nil, errors.New("Torrent not found")
+		return nil, errors.New("torrent not found")
 	}
 	return t, nil
 }

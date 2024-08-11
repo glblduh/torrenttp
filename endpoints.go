@@ -90,10 +90,9 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 		body.Files = nil
 
 		// Starts download for all files in the torrent
-		t.DownloadAll()
-
 		/* Go through the selected files to append its info to the response */
 		for _, f := range t.Files() {
+			f.SetPriority(torrent.PiecePriorityNormal)
 			saveSpecFile(t.InfoHash().String(), f.DisplayPath(), f.Priority())
 			res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 				FileName: f.DisplayPath(),
@@ -112,7 +111,7 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Starts download of said torrent file
-		tf.Download()
+		tf.SetPriority(torrent.PiecePriorityNormal)
 
 		// Save the filename to the DB for persistence
 		saveSpecFile(t.InfoHash().String(), tf.DisplayPath(), tf.Priority())

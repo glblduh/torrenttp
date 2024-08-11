@@ -103,7 +103,6 @@ func loadPersist() {
 				Warn.Printf("Cannot load file \"%s\": %s\n", f.File, tferr)
 				continue
 			}
-			tf.Download()
 			tf.SetPriority(f.Priority)
 		}
 	}
@@ -174,13 +173,6 @@ func saveSpecFile(infohash string, filename string, filepriority torrent.PiecePr
 	spec, err := getSpec(infohash)
 	if err != nil {
 		return err
-	}
-
-	/* Check for duplicates */
-	for _, f := range spec.Files {
-		if f.File == filename && f.Priority == filepriority {
-			return nil
-		}
 	}
 
 	/* Remove unmodified spec */

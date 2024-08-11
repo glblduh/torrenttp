@@ -1,3 +1,4 @@
 torrenttpdl/
 *.exe
 bin/
+*.bat

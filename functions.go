@@ -140,3 +140,18 @@ func calcTorrentProgress(t *torrent.Torrent) string {
 	torrlen := t.Length()
 	return humanize.Bytes(uint64(torrcompleted)) + "/" + humanize.Bytes(uint64(torrlen))
 }
+
+func torrentPriorityToString(p torrent.PiecePriority) string {
+	var returnString string
+	switch p {
+	case torrent.PiecePriorityNone:
+		returnString = "none"
+	case torrent.PiecePriorityNormal:
+		returnString = "normal"
+	case torrent.PiecePriorityHigh:
+		returnString = "high"
+	case torrent.PiecePriorityReadahead:
+		returnString = "readahead"
+	}
+	return returnString
+}

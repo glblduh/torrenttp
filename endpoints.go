@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/anacrolix/torrent"
@@ -93,7 +94,7 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 
 		/* Go through the selected files to append its info to the response */
 		for _, f := range t.Files() {
-			saveSpecFile(t.InfoHash().String(), f.DisplayPath())
+			saveSpecFile(t.InfoHash().String(), f.DisplayPath(), f.Priority())
 			res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 				FileName: f.DisplayPath(),
 				Stream:   createFileLink(t.InfoHash().String(), f.DisplayPath(), false),
@@ -114,13 +115,100 @@ func apiTorrentSelectFile(w http.ResponseWriter, r *http.Request) {
 		tf.Download()
 
 		// Save the filename to the DB for persistence
-		saveSpecFile(t.InfoHash().String(), tf.DisplayPath())
+		saveSpecFile(t.InfoHash().String(), tf.DisplayPath(), tf.Priority())
 
 		/* Go through the selected files to append its info to the response */
 		res.Files = append(res.Files, apiTorrentSelectFileResFiles{
 			FileName: tf.DisplayPath(),
 			Stream:   createFileLink(t.InfoHash().String(), tf.DisplayPath(), false),
 			Download: createFileLink(t.InfoHash().String(), tf.DisplayPath(), true),
+		})
+	}
+
+	encodeRes(w, &res)
+}
+
+// Endpoint for setting the file/s priority
+func apiTorrentPriorityFile(w http.ResponseWriter, r *http.Request) {
+	res := apiTorrentPriorityFileRes{}
+
+	/* Parse the request body to apiTorrentSelectFileBody */
+	body := apiTorrentPriorityFileBody{}
+	if decodeBody(w, r.Body, &body) != nil {
+		return
+	}
+
+	/* Check if no provided files */
+	if !body.AllFiles && len(body.Files) < 1 {
+		errorRes(w, "No files provided", http.StatusNotFound)
+		return
+	}
+
+	/* Gets torrent handler from client */
+	t, err := btEngine.getTorrHandle(body.InfoHash)
+	if err != nil {
+		errorRes(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	/* Create the response body */
+	res.InfoHash = t.InfoHash().String()
+	res.Name = t.Name()
+	res.Priority = body.Priority
+
+	// Parse the priority from the request body
+	var selectedPriority torrent.PiecePriority
+	switch strings.ToLower(body.Priority) {
+	case "none":
+		selectedPriority = torrent.PiecePriorityNone
+	case "normal":
+		selectedPriority = torrent.PiecePriorityNormal
+	case "high":
+		selectedPriority = torrent.PiecePriorityHigh
+	case "readahead":
+		selectedPriority = torrent.PiecePriorityReadahead
+	}
+
+	/* Set file priority for selected files */
+
+	// If AllFiles is toggled
+	if body.AllFiles {
+		// Empties the Files slice to prevent the execution of the code below when AllFiles if toggled
+		body.Files = nil
+
+		/* Go through the selected files to append its info to the response */
+		for _, f := range t.Files() {
+
+			// Set priority of said torrent file to none essentially disabling its download
+			f.SetPriority(selectedPriority)
+
+			// Save the filename to the DB for persistence
+			saveSpecFile(t.InfoHash().String(), f.DisplayPath(), f.Priority())
+
+			/* Go through the all files to append its info to the response */
+			res.Files = append(res.Files, apiTorrentPriorityFileResFiles{
+				FileName: f.DisplayPath(),
+			})
+		}
+	}
+
+	// If specific files are selected
+	for _, f := range body.Files {
+		/* Get the handle of the torrent file from its DisplayPath */
+		tf, tferr := getTorrentFile(t, f)
+		if tferr != nil {
+			continue
+		}
+
+		// Set priority of said torrent file to none essentially disabling its download
+		tf.SetPriority(selectedPriority)
+
+		// Save the filename to the DB for persistence
+		saveSpecFile(t.InfoHash().String(), tf.DisplayPath(), tf.Priority())
+
+		/* Go through the selected files to append its info to the response */
+		res.Files = append(res.Files, apiTorrentPriorityFileResFiles{
+			FileName: tf.DisplayPath(),
 		})
 	}
 
@@ -261,6 +349,7 @@ func apiTorrentStats(w http.ResponseWriter, r *http.Request) {
 				FileSizeReadable:   humanize.Bytes(uint64(tflen)),
 				DownloadedBytes:    int(tfbc),
 				DownloadedReadable: humanize.Bytes(uint64(tfbc)),
+				Priority:           torrentPriorityToString(tf.Priority()),
 			}
 			if tf.BytesCompleted() > 0 {
 				curf.Stream = createFileLink(tstats.InfoHash, tfname, false)

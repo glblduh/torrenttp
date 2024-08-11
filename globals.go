@@ -45,7 +45,12 @@ type (
 		DisableInitialPieceCheck bool
 		DisallowDataUpload       bool
 		DisallowDataDownload     bool
-		Files                    []string
+		Files                    []persistentSpecFiles
+	}
+
+	persistentSpecFiles struct {
+		File     string
+		Priority torrent.PiecePriority
 	}
 
 	// Holds non-native stats for *torrent.Torrent
@@ -125,6 +130,27 @@ type (
 		Download string `json:"download"`
 	}
 
+	// Expected request body to pauseFile
+	apiTorrentPriorityFileBody struct {
+		InfoHash string   `json:"infohash"`
+		Priority string   `json:"priority"`
+		AllFiles bool     `json:"allfiles"`
+		Files    []string `json:"files"`
+	}
+
+	// Expected response body from selectFile
+	apiTorrentPriorityFileRes struct {
+		Name     string                           `json:"name"`
+		InfoHash string                           `json:"infohash"`
+		Priority string                           `json:"priority"`
+		Files    []apiTorrentPriorityFileResFiles `json:"files"`
+	}
+
+	// Struct for selectFile Files
+	apiTorrentPriorityFileResFiles struct {
+		FileName string `json:"filename"`
+	}
+
 	// Expected request body to removeTorrent
 	apiRemoveTorrentBody struct {
 		InfoHash    string `json:"infohash"`
@@ -162,6 +188,7 @@ type (
 		FileSizeReadable   string `json:"filesize"`
 		DownloadedBytes    int    `json:"downloadedbytes"`
 		DownloadedReadable string `json:"downloaded"`
+		Priority           string `json:"priority"`
 		Stream             string `json:"stream,omitempty"`
 		Download           string `json:"download,omitempty"`
 	}

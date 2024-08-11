@@ -98,12 +98,13 @@ func loadPersist() {
 
 		/* Start download of files in persistent spec */
 		for _, f := range spec.Files {
-			tf, tferr := getTorrentFile(t, f)
+			tf, tferr := getTorrentFile(t, f.File)
 			if tferr != nil {
-				Warn.Printf("Cannot load file \"%s\": %s\n", f, tferr)
+				Warn.Printf("Cannot load file \"%s\": %s\n", f.File, tferr)
 				continue
 			}
 			tf.Download()
+			tf.SetPriority(f.Priority)
 		}
 	}
 }
@@ -168,7 +169,7 @@ func removeSpec(infohash string) error {
 }
 
 // Adds file of torrent to DB for persistence
-func saveSpecFile(infohash string, filename string) error {
+func saveSpecFile(infohash string, filename string, filepriority torrent.PiecePriority) error {
 	/* Get persistence spec from infohash */
 	spec, err := getSpec(infohash)
 	if err != nil {
@@ -177,7 +178,7 @@ func saveSpecFile(infohash string, filename string) error {
 
 	/* Check for duplicates */
 	for _, f := range spec.Files {
-		if f == filename {
+		if f.File == filename && f.Priority == filepriority {
 			return nil
 		}
 	}
@@ -189,7 +190,10 @@ func saveSpecFile(infohash string, filename string) error {
 	}
 
 	/* Create new spec with file */
-	spec.Files = append(spec.Files, filename)
+	spec.Files = append(spec.Files, persistentSpecFiles{
+		File:     filename,
+		Priority: filepriority,
+	})
 	json, jerr := json.Marshal(&spec)
 	if jerr != nil {
 		return jerr

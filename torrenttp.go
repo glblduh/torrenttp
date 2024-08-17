@@ -13,6 +13,7 @@ func main() {
 	dirFlag := flag.String("dir", "torrenttpdl", "Download directory path")
 	portFlag := flag.String("port", ":1010", "HTTP server listening port")
 	noupFlag := flag.Bool("noup", false, "Disables BT client upload")
+	pwFlag := flag.String("pw", "changeme", "Set the password for the API")
 	flag.Parse()
 
 	// Creates the BitTorrent client with user args
@@ -52,6 +53,11 @@ func main() {
 		AllowCredentials: true,
 	}).Handler(r)
 
-	Info.Printf("Starting HTTP server on port: http://%s", *portFlag)
+	/* Warn if password is unchanged */
+	if *pwFlag == "changeme" {
+		Warn.Printf("Please change the password")
+	}
+
+	Info.Printf("Starting HTTP server on port: %s", *portFlag)
 	Error.Fatalln(http.ListenAndServe(*portFlag, c))
 }

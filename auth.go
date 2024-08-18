@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-
-	"github.com/gorilla/mux"
 )
 
 // Check if authentication is enabled
@@ -31,7 +29,7 @@ func checkAuthEnabled(isEnabled bool) {
 	Info.Println("Authentication is enabled")
 }
 
-// Check for API key on the HTTP parameter
+// Check for API key on the HTTP query
 func checkAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Check if authencation is enabled
@@ -39,9 +37,8 @@ func checkAuth(next http.HandlerFunc) http.HandlerFunc {
 			next(w, r)
 		}
 
-		// Get API key from HTTP parameter
-		vars := mux.Vars(r)
-		key := vars["key"]
+		// Get API key from HTTP query
+		key := r.URL.Query().Get("key")
 
 		// Unescape the API key
 		unescapedKey, unescapeErr := url.QueryUnescape(key)

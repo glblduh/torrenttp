@@ -80,8 +80,14 @@ func createFileLink(infohash string, filename string, isFile bool) string {
 	if isFile {
 		verb = "file"
 	}
-	return "/api/" + verb + "/" + infohash + "/" + url.QueryEscape(filename)
 
+	link := "/api/" + verb + "/" + infohash + "/" + url.QueryEscape(filename)
+
+	if authEnabled {
+		link = link + "?key=" + url.QueryEscape(apiKey)
+	}
+
+	return link
 }
 
 // Get the file handle inside the torrent

@@ -15,6 +15,10 @@ var (
 	/* BitTorrent client */
 	btEngine btEng
 
+	/* Authentication */
+	authEnabled bool
+	apiKey      string
+
 	/* Loggers */
 	// For information
 	Info = log.New(os.Stderr, "["+time.Now().Format("2006/01/02 15:04:05")+"] [INFO] ", log.Lmsgprefix)

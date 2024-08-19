@@ -48,6 +48,7 @@ func main() {
 	r.HandleFunc("/api/file/{infohash}/{file:.*}", checkAuth(apiDownloadFile)).Methods("GET")
 	r.HandleFunc("/api/torrents", checkAuth(apiTorrentStats)).Methods("GET")
 	r.HandleFunc("/api/torrents/{infohash}", checkAuth(apiTorrentStats)).Methods("GET")
+	r.HandleFunc("/api/play", checkAuth(apiDirectPlay)).Methods("GET")
 
 	/* CORS middleware */
 	c := cors.New(cors.Options{

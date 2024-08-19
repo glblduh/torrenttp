@@ -438,3 +438,82 @@ func apiAddTorrentFile(w http.ResponseWriter, r *http.Request) {
 	res := createAddTorrentRes(t)
 	encodeRes(w, &res)
 }
+
+// Make playlist for direct streaming of magnet link or torrent files
+func apiDirectPlay(w http.ResponseWriter, r *http.Request) {
+	/* Get magnet or infohash from query and validates */
+	magnet := r.URL.Query().Get("magnet")
+	infoHash := r.URL.Query().Get("infohash")
+	files, filesOk := r.URL.Query()["file"]
+
+	unescapedMagnet, unescapeErr := url.QueryUnescape(magnet)
+	if unescapeErr != nil {
+		errorRes(w, "Magnet query unescape error", http.StatusBadRequest)
+		return
+	}
+
+	unescapedInfoHash, unescapeErr := url.QueryUnescape(magnet)
+	if unescapeErr != nil {
+		errorRes(w, "Infohash query unescape error", http.StatusBadRequest)
+		return
+	}
+
+	if magnet != "" && infoHash != "" {
+		errorRes(w, "Only a single torrent is allowed", http.StatusBadRequest)
+		return
+	}
+
+	var t *torrent.Torrent
+	if magnet != "" && infoHash == "" {
+		spec, err := torrent.TorrentSpecFromMagnetUri(unescapedMagnet)
+		if err != nil {
+			errorRes(w, "Magnet to spec error", http.StatusBadRequest)
+			return
+		}
+
+		var addTorrentErr error
+		t, addTorrentErr = btEngine.addTorrent(spec, false)
+		if addTorrentErr != nil {
+			errorRes(w, "Adding torrent error", http.StatusBadRequest)
+			return
+		}
+	}
+
+	if infoHash != "" && magnet == "" {
+		var getTorrHandleErr error
+		t, getTorrHandleErr = btEngine.getTorrHandle(unescapedInfoHash)
+		if getTorrHandleErr != nil {
+			errorRes(w, "Getting torrent handle error", http.StatusBadRequest)
+			return
+		}
+	}
+
+	/* Create the playlist file with the selected files */
+	w.Header().Set("Content-Disposition", "attachment; filename=\""+t.InfoHash().String()+".m3u\"")
+	playList := "#EXTM3U\n"
+
+	httpScheme := "http"
+	if r.Header.Get("X-Forwarded-Proto") != "" {
+		httpScheme = r.Header.Get("X-Forwarded-Proto")
+	}
+
+	if !filesOk {
+		for _, file := range t.Files() {
+			file.SetPriority(torrent.PiecePriorityNormal)
+			saveSpecFile(t.InfoHash().String(), file.DisplayPath(), file.Priority())
+			playList += appendFilePlaylist(httpScheme, r.Host, t.InfoHash().String(), file.DisplayPath())
+		}
+	}
+
+	for _, file := range files {
+		torrentFile, getTorretnFileErr := getTorrentFile(t, file)
+		if getTorretnFileErr != nil {
+			continue
+		}
+		torrentFile.SetPriority(torrent.PiecePriorityNormal)
+		saveSpecFile(t.InfoHash().String(), torrentFile.DisplayPath(), torrentFile.Priority())
+		playList += appendFilePlaylist(httpScheme, r.Host, t.InfoHash().String(), torrentFile.DisplayPath())
+	}
+
+	w.Write([]byte(playList))
+}

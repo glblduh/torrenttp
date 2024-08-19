@@ -32,25 +32,22 @@ func checkAuthEnabled(isEnabled bool) {
 // Check for API key on the HTTP query
 func checkAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Check if authencation is enabled
-		if !authEnabled {
-			next(w, r)
-		}
-
 		// Get API key from HTTP query
 		key := r.URL.Query().Get("key")
 
-		// Unescape the API key
-		unescapedKey, unescapeErr := url.QueryUnescape(key)
-		if unescapeErr != nil {
-			errorRes(w, "Error unescaping the API key", http.StatusInternalServerError)
-			return
-		}
+		if authEnabled {
+			// Unescape the API key
+			unescapedKey, unescapeErr := url.QueryUnescape(key)
+			if unescapeErr != nil {
+				errorRes(w, "Error unescaping the API key", http.StatusInternalServerError)
+				return
+			}
 
-		// Check if API key is valid
-		if unescapedKey != apiKey {
-			errorRes(w, "Key is not valid", http.StatusForbidden)
-			return
+			// Check if API key is valid
+			if unescapedKey != apiKey {
+				errorRes(w, "Key is not valid", http.StatusForbidden)
+				return
+			}
 		}
 
 		next(w, r)

@@ -161,3 +161,9 @@ func torrentPriorityToString(p torrent.PiecePriority) string {
 	}
 	return returnString
 }
+
+func appendFilePlaylist(scheme string, host string, infohash string, name string) string {
+	playList := "#EXTINF:-1," + safenDisplayPath(name) + "\n"
+	playList += scheme + "://" + host + createFileLink(infohash, name, false) + "\n"
+	return playList
+}

@@ -441,51 +441,43 @@ func apiAddTorrentFile(w http.ResponseWriter, r *http.Request) {
 
 // Make playlist for direct streaming of magnet link or torrent files
 func apiDirectPlay(w http.ResponseWriter, r *http.Request) {
-	/* Get magnet or infohash from query and validates */
+	/* Parse magnet link from query */
 	magnet := r.URL.Query().Get("magnet")
-	infoHash := r.URL.Query().Get("infohash")
+	displayName := r.URL.Query().Get("dn")
+	trackers, trackersOk := r.URL.Query()["tr"]
 	files, filesOk := r.URL.Query()["file"]
 
-	unescapedMagnet, unescapeErr := url.QueryUnescape(magnet)
-	if unescapeErr != nil {
-		errorRes(w, "Magnet query unescape error", http.StatusBadRequest)
+	// Check if magnet link is present
+	if magnet == "" {
+		errorRes(w, "Invalid magnet link", http.StatusBadRequest)
 		return
 	}
 
-	unescapedInfoHash, unescapeErr := url.QueryUnescape(magnet)
-	if unescapeErr != nil {
-		errorRes(w, "Infohash query unescape error", http.StatusBadRequest)
+	// Parses magnet link to add display name and trackers from query
+	parsedMagnet, parseMagnetErr := metainfo.ParseMagnetUri(magnet)
+	if parseMagnetErr != nil {
+		errorRes(w, "Parsing magnet link error", http.StatusInternalServerError)
+		return
+	}
+	if displayName != "" {
+		parsedMagnet.DisplayName = displayName
+	}
+	if trackersOk {
+		parsedMagnet.Trackers = trackers
+	}
+
+	// Parse magnet link to torrent spec
+	spec, specErr := torrent.TorrentSpecFromMagnetUri(parsedMagnet.String())
+	if specErr != nil {
+		errorRes(w, "Creating torrent spec error", http.StatusInternalServerError)
 		return
 	}
 
-	if magnet != "" && infoHash != "" {
-		errorRes(w, "Only a single torrent is allowed", http.StatusBadRequest)
+	// Add torrent spec to BT engine
+	t, addTorrentErr := btEngine.addTorrent(spec, false)
+	if addTorrentErr != nil {
+		errorRes(w, "Adding torrent error", http.StatusInternalServerError)
 		return
-	}
-
-	var t *torrent.Torrent
-	if magnet != "" && infoHash == "" {
-		spec, err := torrent.TorrentSpecFromMagnetUri(unescapedMagnet)
-		if err != nil {
-			errorRes(w, "Magnet to spec error", http.StatusBadRequest)
-			return
-		}
-
-		var addTorrentErr error
-		t, addTorrentErr = btEngine.addTorrent(spec, false)
-		if addTorrentErr != nil {
-			errorRes(w, "Adding torrent error", http.StatusBadRequest)
-			return
-		}
-	}
-
-	if infoHash != "" && magnet == "" {
-		var getTorrHandleErr error
-		t, getTorrHandleErr = btEngine.getTorrHandle(unescapedInfoHash)
-		if getTorrHandleErr != nil {
-			errorRes(w, "Getting torrent handle error", http.StatusBadRequest)
-			return
-		}
 	}
 
 	/* Create the playlist file with the selected files */

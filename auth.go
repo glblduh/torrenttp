@@ -30,8 +30,8 @@ func checkAuthEnabled(isEnabled bool) {
 }
 
 // Check for API key on the HTTP query
-func checkAuth(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func checkAuth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get API key from HTTP query
 		key := r.URL.Query().Get("key")
 
@@ -50,6 +50,6 @@ func checkAuth(next http.HandlerFunc) http.HandlerFunc {
 			}
 		}
 
-		next(w, r)
-	}
+		next.ServeHTTP(w, r)
+	})
 }

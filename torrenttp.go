@@ -31,24 +31,25 @@ func main() {
 
 	/* Initialize endpoints and HTTP server */
 	r := mux.NewRouter().StrictSlash(true)
+	r.Use(checkAuth)
 
 	/* Handlers for endpoints */
 
 	/* POST */
-	r.HandleFunc("/api/addtorrent", checkAuth(apiAddTorrent)).Methods("POST")
-	r.HandleFunc("/api/selectfile", checkAuth(apiTorrentSelectFile)).Methods("POST")
-	r.HandleFunc("/api/setpriority", checkAuth(apiTorrentPriorityFile)).Methods("POST")
-	r.HandleFunc("/api/addtorrentfile", checkAuth(apiAddTorrentFile)).Methods("POST")
+	r.HandleFunc("/api/addtorrent", apiAddTorrent).Methods("POST")
+	r.HandleFunc("/api/selectfile", apiTorrentSelectFile).Methods("POST")
+	r.HandleFunc("/api/setpriority", apiTorrentPriorityFile).Methods("POST")
+	r.HandleFunc("/api/addtorrentfile", apiAddTorrentFile).Methods("POST")
 
 	/* DELETE */
-	r.HandleFunc("/api/removetorrent", checkAuth(apiRemoveTorrent)).Methods("DELETE")
+	r.HandleFunc("/api/removetorrent", apiRemoveTorrent).Methods("DELETE")
 
 	/* GET */
-	r.HandleFunc("/api/stream/{infohash}/{file:.*}", checkAuth(apiStreamTorrentFile)).Methods("GET")
-	r.HandleFunc("/api/file/{infohash}/{file:.*}", checkAuth(apiDownloadFile)).Methods("GET")
-	r.HandleFunc("/api/torrents", checkAuth(apiTorrentStats)).Methods("GET")
-	r.HandleFunc("/api/torrents/{infohash}", checkAuth(apiTorrentStats)).Methods("GET")
-	r.HandleFunc("/api/play", checkAuth(apiDirectPlay)).Methods("GET")
+	r.HandleFunc("/api/stream/{infohash}/{file:.*}", apiStreamTorrentFile).Methods("GET")
+	r.HandleFunc("/api/file/{infohash}/{file:.*}", apiDownloadFile).Methods("GET")
+	r.HandleFunc("/api/torrents", apiTorrentStats).Methods("GET")
+	r.HandleFunc("/api/torrents/{infohash}", apiTorrentStats).Methods("GET")
+	r.HandleFunc("/api/play", apiDirectPlay).Methods("GET")
 
 	/* CORS middleware */
 	c := cors.New(cors.Options{
